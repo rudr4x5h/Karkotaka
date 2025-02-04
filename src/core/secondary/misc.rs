@@ -1,20 +1,13 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum Kind {
     OG,
     AI,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum Gender {
     Male,
     Female,
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum Quality {
-    Optimal,
-    Average,
-    Deficient,
 }
