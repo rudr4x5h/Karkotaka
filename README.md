@@ -15,4 +15,38 @@ The main entities of this program are:
 6. Synopsis - TL;DR; a summary comprising the essence of Story.
 7. Headshot - a related or promotional image/graphic for Story.
 
+### The Big Picture
+```text
+ Story                            Author          
+ ├── id                           ├── id          
+ ├── created_at                   ├── name        
+ ├── updated_at                   ├── gender      
+ ├── [fk] Author                  ├── email       
+ ├── [fk] Domain                  ├── contact     
+ ├── [fk] Body                    ├── profile_img 
+ ├── [fk] Headline                └── profile_uri 
+ ├── [fk] Synopsis                                
+ └── [fk] Headshot                Domain          
+                                  ├── name        
+                                  └── [fk] Expert 
+  Headshot                            └── Author  
+  ├── kind                                        
+  └── [fk] Image              Body                
+                              ├── num_chars       
+  Paragraph                   ├── num_words       
+  ├── id                      ├── num_para        
+  ├── content                 └── [fk] Paragraphs 
+  ├── kind                        └── Paragraph   
+  ├── created_at                                  
+  ├── updated_at              Synopsis            
+  ├── num_chars               ├── kind            
+  └── num_words               └── [fk] Paragraphs 
+                                  └── Paragraph   
+  Image             Report                        
+  ├── uri           ├── id                        
+  ├── caption       ├── created_at                
+  └── prompt        └── [fk] Story                
+
+```
+
 
