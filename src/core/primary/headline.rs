@@ -11,8 +11,8 @@ pub struct Headline {
 }
 
 impl Headline {
-    pub fn new(content: String, kind: Kind) -> Self {
-        Self { id: Ulid::new(), content, kind }
+    pub fn new<S: Into<String>>(content: S, kind: Kind) -> Self {
+        Self { id: Ulid::new(), content: content.into(), kind }
     }
 
     pub fn get_id(&self) -> &Ulid {
@@ -38,6 +38,6 @@ impl Headline {
 
 impl Default for Headline {
     fn default() -> Self {
-        Self::new("Placeholder Headline".to_string(), Kind::OG)
+        Self::new("Placeholder Headline", Kind::OG)
     }
 }
