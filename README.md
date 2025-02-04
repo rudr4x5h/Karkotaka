@@ -33,10 +33,10 @@ The main entities of this program are:
   ├── kind                                        
   └── [fk] Image              Body                
                               ├── num_chars       
-  Paragraph                   ├── num_words       
-  ├── id                      ├── num_para        
-  ├── content                 └── [fk] Paragraphs 
-  ├── kind                        └── Paragraph   
+  Paragraph      Headline     ├── num_words       
+  ├── id         ├── id       ├── num_para        
+  ├── content    ├── content  └── [fk] Paragraphs 
+  ├── kind       └── kind         └── Paragraph   
   ├── created_at                                  
   ├── updated_at              Synopsis            
   ├── num_chars               ├── kind            
