@@ -32,9 +32,10 @@ impl Headshot {
 }
 
 impl Default for Headshot {
+    // TODO - Read from config
     fn default() -> Self {
         Self {
-            kind: Kind::OG,
+            kind: Kind::Placeholder,
             image: Image::new("file:///home/rudr4x5h/Pictures/Foundry/Karkotaka/logo.png"),
         }
     }
