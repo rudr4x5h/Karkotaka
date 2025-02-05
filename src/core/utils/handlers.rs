@@ -1,7 +1,6 @@
 use anyhow::Error;
 use axum::extract::{Json, Query, State};
 use axum::response::IntoResponse;
-use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 use ulid::Ulid;
 
@@ -56,7 +55,7 @@ pub async fn add_synopsis(
     Json(content): Json<String>,
     Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Synopsis>, Error> {
+) -> Result<Json<Story>, Error> {
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind.clone());
 
@@ -67,33 +66,45 @@ pub async fn add_synopsis(
     let story = state.load(story_id).unwrap();
     story.set_synopsis(synopsis.clone());
 
-    Ok(Json(synopsis.clone()))
+    Ok(Json(story.clone()))
 }
 
 pub async fn add_body(
     Json(paragraphs): Json<Vec<Paragraph>>,
     Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Body>, Error> {
+) -> Result<Json<Story>, Error> {
     let body = Body::from_paras(paragraphs);
-    Ok(Json(body))
+
+    let mut state = state.lock().unwrap();
+    let story = state.load(story_id).unwrap();
+    story.set_body(body);
+    Ok(Json(story.clone()))
 }
 
 pub async fn add_paragraph(
     Json(content): Json<String>,
     Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Paragraph>, Error> {
+) -> Result<Json<Story>, Error> {
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind);
-    Ok(Json(paragraph))
+
+    let mut state = state.lock().unwrap();
+    let story = state.load(story_id).unwrap();
+    let body = story.get_body_mut();
+    body.add_paragraph(paragraph);
+
+    Ok(Json(story.clone()))
 }
 
 pub async fn report_story(
-    Json(story): Json<Story>,
     Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
 ) -> Result<Json<Report>, Error> {
-    let report = Report::new(story);
+    let mut state = state.lock().unwrap();
+    let story = state.load(story_id).unwrap();
+
+    let report = Report::new(story.clone());
     Ok(Json(report))
 }

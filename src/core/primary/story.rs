@@ -51,6 +51,10 @@ impl Story {
         &self.body
     }
 
+    pub fn get_body_mut(&mut self) -> &mut Body {
+        &mut self.body
+    }
+
     pub fn set_body(&mut self, body: Body) {
         self.body = body;
     }
