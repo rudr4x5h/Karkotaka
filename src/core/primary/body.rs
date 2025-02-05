@@ -1,6 +1,6 @@
+use crate::core::secondary::paragraph::Paragraph;
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
-use crate::core::secondary::paragraph::Paragraph;
 
 #[derive(Serialize, Deserialize)]
 pub struct Body {
@@ -18,6 +18,14 @@ impl Body {
             num_para: 0,
             paragraphs: Vec::new(),
         }
+    }
+
+    pub fn from_paras(paragraphs: Vec<Paragraph>) -> Self {
+        let mut body = Body::new();
+        for para in paragraphs {
+            body.add_paragraph(para);
+        }
+        body
     }
 
     pub fn get_num_chars(&self) -> u8 {
@@ -44,7 +52,8 @@ impl Body {
     }
 
     pub fn remove_paragraph(&mut self, id: &Ulid) {
-        let para_idx = self.paragraphs
+        let para_idx = self
+            .paragraphs
             .iter()
             .position(|p| p.get_id() == id)
             .unwrap();
@@ -52,7 +61,7 @@ impl Body {
         self.num_chars -= para.get_num_chars();
         self.num_words -= para.get_num_words();
         self.num_para -= 1;
-    }    
+    }
 }
 
 impl Default for Body {
