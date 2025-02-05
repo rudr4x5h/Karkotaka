@@ -34,3 +34,9 @@ impl Persist for PersistInMemory {
         Err(Error::msg("Story not found"))
     }
 }
+
+impl Default for PersistInMemory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
