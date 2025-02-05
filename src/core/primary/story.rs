@@ -51,16 +51,16 @@ impl Story {
         &self.body
     }
 
-    pub fn set_body(&mut self) -> &Body {
-        &self.body
+    pub fn set_body(&mut self, body: Body) {
+        self.body = body;
     }
 
     pub fn get_headline(&self) -> &Headline {
         &self.headline
     }
 
-    pub fn set_headline(&mut self) -> &Headline {
-        &self.headline
+    pub fn set_headline(&mut self, headline: Headline) {
+        self.headline = headline;
     }
 
     pub fn get_synopsis(&self) -> &Synopsis {
