@@ -3,7 +3,7 @@ use ulid::Ulid;
 
 use crate::core::secondary::misc::Kind;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Headline {
     id: Ulid,
     content: String,

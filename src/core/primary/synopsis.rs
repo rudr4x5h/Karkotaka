@@ -4,7 +4,7 @@ use ulid::Ulid;
 use crate::core::secondary::misc::Kind;
 use crate::core::secondary::paragraph::Paragraph;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Synopsis {
     id: Ulid,
     kind: Kind,
