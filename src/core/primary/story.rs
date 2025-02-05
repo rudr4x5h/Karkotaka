@@ -7,7 +7,7 @@ use super::{
     synopsis::Synopsis,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Story {
     id: Ulid,
     created_at: DateTime<Local>,
@@ -51,7 +51,15 @@ impl Story {
         &self.body
     }
 
+    pub fn set_body(&mut self) -> &Body {
+        &self.body
+    }
+
     pub fn get_headline(&self) -> &Headline {
+        &self.headline
+    }
+
+    pub fn set_headline(&mut self) -> &Headline {
         &self.headline
     }
 
@@ -59,8 +67,16 @@ impl Story {
         &self.synopsis
     }
 
+    pub fn set_synopsis(&mut self, synopsis: Synopsis) {
+        self.synopsis = synopsis;
+    }
+
     pub fn get_headshot(&self) -> &Headshot {
         &self.headshot
+    }
+
+    pub fn set_headshot(&mut self, headshot: Headshot) {
+        self.headshot = headshot;
     }
 }
 
