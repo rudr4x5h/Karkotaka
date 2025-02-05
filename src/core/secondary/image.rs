@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Image {
     id: Ulid,
     uri: String,
