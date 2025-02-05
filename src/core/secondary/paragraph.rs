@@ -83,6 +83,6 @@ impl Paragraph {
 
 impl Default for Paragraph {
     fn default() -> Self {
-        Self::new(String::new(), Kind::OG)
+        Self::new(String::new(), Kind::Placeholder)
     }
 }

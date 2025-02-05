@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub enum Kind {
     OG,
     AI,
+    Placeholder,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

@@ -47,6 +47,6 @@ impl Synopsis {
 
 impl Default for Synopsis {
     fn default() -> Self {
-        Self::new(Kind::OG)
+        Self::new(Kind::Placeholder)
     }
 }

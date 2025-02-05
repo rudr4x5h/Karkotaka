@@ -38,6 +38,6 @@ impl Headline {
 
 impl Default for Headline {
     fn default() -> Self {
-        Self::new("Placeholder Headline", Kind::OG)
+        Self::new("Placeholder Headline", Kind::Placeholder)
     }
 }
