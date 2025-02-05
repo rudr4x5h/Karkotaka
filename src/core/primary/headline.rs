@@ -12,7 +12,11 @@ pub struct Headline {
 
 impl Headline {
     pub fn new<S: Into<String>>(content: S, kind: Kind) -> Self {
-        Self { id: Ulid::new(), content: content.into(), kind }
+        Self {
+            id: Ulid::new(),
+            content: content.into(),
+            kind,
+        }
     }
 
     pub fn get_id(&self) -> &Ulid {

@@ -42,7 +42,6 @@ impl Author {
     pub fn has_contact_details(&self) -> bool {
         self.email.is_some() || self.contact.is_some()
     }
-
 }
 
 impl Default for Author {
@@ -50,4 +49,3 @@ impl Default for Author {
         Self::new("Shiva".to_string())
     }
 }
-

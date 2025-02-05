@@ -4,16 +4,16 @@ use super::author::Author;
 
 #[derive(Serialize, Deserialize)]
 pub struct Domain {
-    name: String,
+    name: DomainName,
     expert: Author,
 }
 
 impl Domain {
-    pub fn new(name: String, expert: Author) -> Self {
+    pub fn new(name: DomainName, expert: Author) -> Self {
         Self { name, expert }
     }
 
-    pub fn get_name(&self) -> &String {
+    pub fn get_name(&self) -> &DomainName {
         &self.name
     }
 
@@ -28,6 +28,15 @@ impl Domain {
 
 impl Default for Domain {
     fn default() -> Self {
-        Self::new("General".to_string(), Author::default())
+        Self::new(DomainName::Undefined, Author::default())
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum DomainName {
+    Agriculture,
+    Sustainability,
+    Consciousness,
+    Cybersecurity,
+    Undefined,
 }

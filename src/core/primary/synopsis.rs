@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-use crate::core::secondary::paragraph::Paragraph;
 use crate::core::secondary::misc::Kind;
+use crate::core::secondary::paragraph::Paragraph;
 
 #[derive(Serialize, Deserialize)]
 pub struct Synopsis {

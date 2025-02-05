@@ -21,24 +21,17 @@ pub struct Story {
 }
 
 impl Story {
-    pub fn new(
-        author: Author,
-        domain: Domain,
-        body: Body,
-        headline: Headline,
-        synopsis: Synopsis,
-        headshot: Headshot,
-    ) -> Self {
+    pub fn new(headline: Headline) -> Self {
         Self {
             id: Ulid::new(),
             created_at: Local::now(),
             updated_at: Local::now(),
-            author,
-            domain,
-            body,
+            author: Author::default(),
+            domain: Domain::default(),
+            body: Body::default(),
             headline,
-            synopsis,
-            headshot,
+            synopsis: Synopsis::default(),
+            headshot: Headshot::default(),
         }
     }
 
@@ -73,13 +66,6 @@ impl Story {
 
 impl Default for Story {
     fn default() -> Self {
-        Self::new(
-            Author::default(),
-            Domain::default(),
-            Body::default(),
-            Headline::default(),
-            Synopsis::default(),
-            Headshot::default(),
-        )
+        Self::new(Headline::default())
     }
 }
