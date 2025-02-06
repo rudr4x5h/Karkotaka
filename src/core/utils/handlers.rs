@@ -1,9 +1,10 @@
-use anyhow::Error;
+use axum::debug_handler;
 use axum::extract::{Json, Query, State};
 use axum::response::IntoResponse;
 use std::sync::{Arc, Mutex};
 use ulid::Ulid;
 
+use super::error::AppError;
 use crate::core::primary::body::Body;
 use crate::core::primary::headline::Headline;
 use crate::core::primary::headshot::Headshot;
@@ -20,10 +21,11 @@ pub async fn root() -> impl IntoResponse {
     "Namaskaram"
 }
 
+#[debug_handler]
 pub async fn create_story(
-    Json(content): Json<String>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Story>, Error> {
+    Json(content): Json<String>,
+) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
     let headline = Headline::new(content, kind);
     let story = Story::new(headline);
@@ -32,15 +34,16 @@ pub async fn create_story(
     let story_id = state.save(story.clone());
     match story_id {
         Ok(_) => Ok(Json(story.clone())),
-        Err(e) => Err(e),
+        Err(e) => Err(AppError(e)),
     }
 }
 
+#[debug_handler]
 pub async fn add_headshot(
-    Json(uri): Json<String>,
-    Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Story>, Error> {
+    Query(story_id): Query<Ulid>,
+    Json(uri): Json<String>,
+) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
     let image = Image::new(uri);
     let headshot = Headshot::new(kind, image);
@@ -51,11 +54,12 @@ pub async fn add_headshot(
     Ok(Json(story.clone()))
 }
 
+#[debug_handler]
 pub async fn add_synopsis(
-    Json(content): Json<String>,
-    Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Story>, Error> {
+    Query(story_id): Query<Ulid>,
+    Json(content): Json<String>,
+) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind.clone());
 
@@ -70,10 +74,10 @@ pub async fn add_synopsis(
 }
 
 pub async fn add_body(
-    Json(paragraphs): Json<Vec<Paragraph>>,
-    Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Story>, Error> {
+    Query(story_id): Query<Ulid>,
+    Json(paragraphs): Json<Vec<Paragraph>>,
+) -> Result<Json<Story>, AppError> {
     let body = Body::from_paras(paragraphs);
 
     let mut state = state.lock().unwrap();
@@ -83,10 +87,10 @@ pub async fn add_body(
 }
 
 pub async fn add_paragraph(
-    Json(content): Json<String>,
-    Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Story>, Error> {
+    Query(story_id): Query<Ulid>,
+    Json(content): Json<String>,
+) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind);
 
@@ -99,9 +103,9 @@ pub async fn add_paragraph(
 }
 
 pub async fn report_story(
-    Query(story_id): Query<Ulid>,
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-) -> Result<Json<Report>, Error> {
+    Query(story_id): Query<Ulid>,
+) -> Result<Json<Report>, AppError> {
     let mut state = state.lock().unwrap();
     let story = state.load(story_id).unwrap();
 
