@@ -59,6 +59,11 @@ impl Story {
         self.body = body;
     }
 
+    pub fn merge_body(&mut self, body: Body) {
+        let updated_body = self.body.merge(body);
+        self.set_body(updated_body);
+    }
+
     pub fn get_headline(&self) -> &Headline {
         &self.headline
     }
