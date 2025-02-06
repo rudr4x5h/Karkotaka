@@ -26,16 +26,15 @@ pub async fn create_story(Json(content): Json<String>) -> Result<Json<Story>, Ap
     let headline = Headline::new(content, kind);
     let story = Story::new(headline);
 
-    let state = DB.clone();
-    if let Some(story) = state
-        .create((STORY_DB, story.get_id_str()))
-        .content(story)
-        .await?
-    {
-        Ok(Json(story))
-    } else {
-        Err(AppError(Error::msg("Story creation failed.")))
-    }
+    let record: Option<Story> = DB
+        // .create((STORY_DB, story.clone().get_id_str()))
+        .create(STORY_DB)
+        .content(story.clone())
+        .await?;
+
+    println!("Reached");
+    // dbg!(record);
+    Ok(Json(story))
 }
 
 #[debug_handler]
