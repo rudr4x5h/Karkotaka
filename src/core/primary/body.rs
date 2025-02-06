@@ -1,6 +1,6 @@
 use crate::core::secondary::paragraph::Paragraph;
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Body {
@@ -59,7 +59,7 @@ impl Body {
         self.num_para += 1;
     }
 
-    pub fn remove_paragraph(&mut self, id: &Ulid) {
+    pub fn remove_paragraph(&mut self, id: &Uuid) {
         let para_idx = self
             .paragraphs
             .iter()

@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Image {
-    id: Ulid,
+    id: Uuid,
     uri: String,
     caption: Option<String>,
     prompt: Option<String>,
@@ -12,7 +12,7 @@ pub struct Image {
 impl Image {
     pub fn new<S: Into<String>>(uri: S) -> Self {
         Self {
-            id: Ulid::new(),
+            id: Uuid::new_v4(),
             uri: uri.into(),
             caption: None,
             prompt: None,

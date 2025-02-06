@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+use uuid::Uuid;
 
 use crate::core::secondary::misc::Kind;
 use crate::core::secondary::paragraph::Paragraph;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Synopsis {
-    id: Ulid,
+    id: Uuid,
     kind: Kind,
     paragraphs: Vec<Paragraph>,
 }
@@ -14,13 +14,13 @@ pub struct Synopsis {
 impl Synopsis {
     pub fn new(kind: Kind) -> Self {
         Self {
-            id: Ulid::new(),
+            id: Uuid::new_v4(),
             kind,
             paragraphs: Vec::new(),
         }
     }
 
-    pub fn get_id(&self) -> &Ulid {
+    pub fn get_id(&self) -> &Uuid {
         &self.id
     }
 
@@ -40,7 +40,7 @@ impl Synopsis {
         self.paragraphs.push(paragraph);
     }
 
-    pub fn remove_paragraph(&mut self, id: &Ulid) {
+    pub fn remove_paragraph(&mut self, id: &Uuid) {
         self.paragraphs.retain(|paragraph| paragraph.get_id() != id);
     }
 }

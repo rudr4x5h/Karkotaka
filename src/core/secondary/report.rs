@@ -1,12 +1,12 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+use uuid::Uuid;
 
 use crate::core::primary::story::Story;
 
 #[derive(Serialize, Deserialize)]
 pub struct Report {
-    id: Ulid,
+    id: Uuid,
     created_at: DateTime<Local>,
     story: Story,
 }
@@ -14,13 +14,13 @@ pub struct Report {
 impl Report {
     pub fn new(story: Story) -> Self {
         Self {
-            id: Ulid::new(),
+            id: Uuid::new_v4(),
             created_at: Local::now(),
             story,
         }
     }
 
-    pub fn get_id(&self) -> &Ulid {
+    pub fn get_id(&self) -> &Uuid {
         &self.id
     }
 

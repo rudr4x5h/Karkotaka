@@ -1,12 +1,12 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+use uuid::Uuid;
 
 use super::misc::Kind;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Paragraph {
-    id: Ulid,
+    id: Uuid,
     content: String,
     kind: Kind,
     num_chars: u8,
@@ -18,7 +18,7 @@ pub struct Paragraph {
 impl Paragraph {
     pub fn new(content: String, kind: Kind) -> Self {
         Self {
-            id: Ulid::new(),
+            id: Uuid::new_v4(),
             content: content.clone(),
             kind,
             num_chars: content.clone().chars().count() as u8,
@@ -28,7 +28,7 @@ impl Paragraph {
         }
     }
 
-    pub fn get_id(&self) -> &Ulid {
+    pub fn get_id(&self) -> &Uuid {
         &self.id
     }
 

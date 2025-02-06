@@ -1,6 +1,6 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+use surrealdb::RecordId;
 
 use super::{
     author::Author, body::Body, domain::Domain, headline::Headline, headshot::Headshot,
@@ -10,8 +10,20 @@ use super::{
 pub const STORY_DB: &str = "story";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct StoryWithId {
+    id: RecordId,
+    created_at: DateTime<Local>,
+    updated_at: DateTime<Local>,
+    author: Author,
+    domain: Domain,
+    body: Body,
+    headline: Headline,
+    synopsis: Synopsis,
+    headshot: Headshot,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Story {
-    id: Ulid,
     created_at: DateTime<Local>,
     updated_at: DateTime<Local>,
     author: Author,
@@ -25,7 +37,6 @@ pub struct Story {
 impl Story {
     pub fn new(headline: Headline) -> Self {
         Self {
-            id: Ulid::new(),
             created_at: Local::now(),
             updated_at: Local::now(),
             author: Author::default(),
@@ -35,14 +46,6 @@ impl Story {
             synopsis: Synopsis::default(),
             headshot: Headshot::default(),
         }
-    }
-
-    pub fn get_id(&self) -> &Ulid {
-        &self.id
-    }
-
-    pub fn get_id_str(&self) -> String {
-        self.id.to_string()
     }
 
     pub fn get_author(&self) -> &Author {
