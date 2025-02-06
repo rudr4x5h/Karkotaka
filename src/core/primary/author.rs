@@ -3,7 +3,7 @@ use ulid::Ulid;
 
 use crate::core::secondary::misc::Gender;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Author {
     id: Ulid,
     name: String,

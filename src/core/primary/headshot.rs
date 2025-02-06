@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::core::secondary::image::Image;
 use crate::core::secondary::misc::Kind;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Headshot {
     kind: Kind,
     image: Image,

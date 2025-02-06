@@ -7,7 +7,7 @@ pub enum Kind {
     Placeholder,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Gender {
     Male,
     Female,
