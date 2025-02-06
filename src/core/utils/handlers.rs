@@ -1,7 +1,8 @@
 use axum::debug_handler;
-use axum::extract::{Json, Query, State};
+use axum::extract::{Json, Path, State};
 use axum::response::IntoResponse;
-use std::sync::{Arc, Mutex};
+use parking_lot::Mutex;
+use std::sync::Arc;
 use ulid::Ulid;
 
 use super::error::AppError;
@@ -30,7 +31,7 @@ pub async fn create_story(
     let headline = Headline::new(content, kind);
     let story = Story::new(headline);
 
-    let mut state = state.lock().unwrap();
+    let mut state = state.lock();
     let story_id = state.save(story.clone());
     match story_id {
         Ok(_) => Ok(Json(story.clone())),
@@ -41,33 +42,33 @@ pub async fn create_story(
 #[debug_handler]
 pub async fn add_headshot(
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-    Query(story_id): Query<Ulid>,
+    Path(story_id): Path<Ulid>,
     Json(uri): Json<String>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
     let image = Image::new(uri);
     let headshot = Headshot::new(kind, image);
 
-    let mut state = state.lock().unwrap();
-    let story = state.load(story_id).unwrap();
+    let mut state = state.lock();
+    let story = state.load(story_id)?;
     story.set_headshot(headshot);
     Ok(Json(story.clone()))
 }
 
-#[debug_handler]
 pub async fn add_synopsis(
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-    Query(story_id): Query<Ulid>,
+    Path(story_id): Path<Ulid>,
     Json(content): Json<String>,
 ) -> Result<Json<Story>, AppError> {
+    println!("{:?}", content);
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind.clone());
 
     let mut synopsis = Synopsis::new(kind.clone());
     synopsis.add_paragraph(paragraph);
 
-    let mut state = state.lock().unwrap();
-    let story = state.load(story_id).unwrap();
+    let mut state = state.lock();
+    let story = state.load(story_id)?;
     story.set_synopsis(synopsis.clone());
 
     Ok(Json(story.clone()))
@@ -75,27 +76,40 @@ pub async fn add_synopsis(
 
 pub async fn add_body(
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-    Query(story_id): Query<Ulid>,
-    Json(paragraphs): Json<Vec<Paragraph>>,
+    Path(story_id): Path<Ulid>,
+    Json(paragraphs): Json<Vec<String>>,
 ) -> Result<Json<Story>, AppError> {
-    let body = Body::from_paras(paragraphs);
+    let paras = _get_para_from_strings(paragraphs.clone()).await;
+    let body = Body::from_paras(paras);
 
-    let mut state = state.lock().unwrap();
-    let story = state.load(story_id).unwrap();
+    let mut state = state.lock();
+    let story = state.load(story_id)?;
     story.set_body(body);
     Ok(Json(story.clone()))
 }
 
+async fn _get_para_from_strings(paragraphs: Vec<String>) -> Vec<Paragraph> {
+    let paras = paragraphs
+        .iter()
+        .map(|content| {
+            let kind = Kind::OG;
+            Paragraph::new(content.clone(), kind)
+        })
+        .collect();
+
+    paras
+}
+
 pub async fn add_paragraph(
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-    Query(story_id): Query<Ulid>,
+    Path(story_id): Path<Ulid>,
     Json(content): Json<String>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind);
 
-    let mut state = state.lock().unwrap();
-    let story = state.load(story_id).unwrap();
+    let mut state = state.lock();
+    let story = state.load(story_id)?;
     let body = story.get_body_mut();
     body.add_paragraph(paragraph);
 
@@ -104,10 +118,10 @@ pub async fn add_paragraph(
 
 pub async fn report_story(
     State(state): State<Arc<Mutex<PersistInMemory>>>,
-    Query(story_id): Query<Ulid>,
+    Path(story_id): Path<Ulid>,
 ) -> Result<Json<Report>, AppError> {
-    let mut state = state.lock().unwrap();
-    let story = state.load(story_id).unwrap();
+    let mut state = state.lock();
+    let story = state.load(story_id)?;
 
     let report = Report::new(story.clone());
     Ok(Json(report))
