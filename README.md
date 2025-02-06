@@ -1,5 +1,5 @@
 # Kārkotaka
-Storytellers love telling **stories**, and this toolkit strives to allow 
+Storytellers love telling **stories**, and this toolkit strives to allow
 the cratives more freedom in the pursuit of what sets their :heart: on :fire:.
 
 A story can be long, short, sweet or sour. Whatever it maybe, and whatever be your style,
@@ -17,36 +17,35 @@ The main entities of this program are:
 
 ### The Big Picture
 ```text
- Story                            Author          
- ├── id                           ├── id          
- ├── created_at                   ├── name        
- ├── updated_at                   ├── gender      
- ├── [fk] Author                  ├── email       
- ├── [fk] Domain                  ├── contact     
- ├── [fk] Body                    ├── profile_img 
- ├── [fk] Headline                └── profile_uri 
- ├── [fk] Synopsis                                
- └── [fk] Headshot                Domain          
-                                  ├── name        
-                                  └── [fk] Expert 
-  Headshot                            └── Author  
-  ├── kind                                        
-  └── [fk] Image              Body                
-                              ├── num_chars       
-  Paragraph      Headline     ├── num_words       
-  ├── id         ├── id       ├── num_para        
-  ├── content    ├── content  └── [fk] Paragraphs 
-  ├── kind       └── kind         └── Paragraph   
-  ├── created_at                                  
-  ├── updated_at              Synopsis            
-  ├── num_chars               ├── kind            
-  └── num_words               └── [fk] Paragraphs 
-                                  └── Paragraph   
-  Image             Report                        
-  ├── uri           ├── id                        
-  ├── caption       ├── created_at                
-  └── prompt        └── [fk] Story                
+Story                Author       Domain
+ ├── id               ├── id       ├── name
+ ├── created_at       ├── name     └── [fk] Expert
+ ├── updated_at       ├── gender       └── Author
+ ├── publish_status   ├── email
+ ├── [fk] Author      ├── contact
+ ├── [fk] Domain      ├── profile_img
+ ├── [fk] Body        └── profile_uri
+ ├── [fk] Headline
+ ├── [fk] Synopsis    Body
+ └── [fk] Headshot    ├── num_chars
+                      ├── num_words
+ Headline             ├── num_para
+ ├── id               └── [fk] Paragraphs
+ ├── content              └── Paragraph
+ └── kind
+                      Synopsis
+ Paragraph            ├── kind
+ ├── id               └── [fk] Paragraphs
+ ├── content              └── Paragraph
+ ├── kind
+ ├── created_at       Headshot
+ ├── updated_at       ├── kind
+ ├── num_chars        └── [fk] Image
+ └── num_words
+
+ Image                Report
+ ├── uri              ├── id
+ ├── caption          ├── created_at
+ └── prompt           └── [fk] Story
 
 ```
-
-
