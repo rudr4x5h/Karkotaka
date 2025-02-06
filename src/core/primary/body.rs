@@ -44,6 +44,14 @@ impl Body {
         &self.paragraphs
     }
 
+    pub fn merge(&self, secondary_body: Self) -> Self {
+        let mut primary_body = self.clone();
+        for para in secondary_body.get_paragraphs() {
+            primary_body.add_paragraph(para.clone());
+        }
+        primary_body
+    }
+
     pub fn add_paragraph(&mut self, paragraph: Paragraph) {
         self.paragraphs.push(paragraph.clone());
         self.num_chars += paragraph.get_num_chars();

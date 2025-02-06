@@ -60,7 +60,6 @@ pub async fn add_synopsis(
     Path(story_id): Path<Ulid>,
     Json(content): Json<String>,
 ) -> Result<Json<Story>, AppError> {
-    println!("{:?}", content);
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind.clone());
 
