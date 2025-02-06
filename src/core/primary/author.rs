@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+use uuid::Uuid;
 
 use crate::core::secondary::misc::Gender;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Author {
-    id: Ulid,
+    id: Uuid,
     name: String,
     gender: Option<Gender>,
     email: Option<String>,
@@ -17,7 +17,7 @@ pub struct Author {
 impl Author {
     pub fn new(name: String) -> Self {
         Self {
-            id: Ulid::new(),
+            id: Uuid::new_v4(),
             name,
             gender: None,
             email: None,
@@ -27,7 +27,7 @@ impl Author {
         }
     }
 
-    pub fn get_id(&self) -> &Ulid {
+    pub fn get_id(&self) -> &Uuid {
         &self.id
     }
 

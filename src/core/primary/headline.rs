@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
+use uuid::Uuid;
 
 use crate::core::secondary::misc::Kind;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Headline {
-    id: Ulid,
+    id: Uuid,
     content: String,
     kind: Kind,
 }
@@ -13,13 +13,13 @@ pub struct Headline {
 impl Headline {
     pub fn new<S: Into<String>>(content: S, kind: Kind) -> Self {
         Self {
-            id: Ulid::new(),
+            id: Uuid::new_v4(),
             content: content.into(),
             kind,
         }
     }
 
-    pub fn get_id(&self) -> &Ulid {
+    pub fn get_id(&self) -> &Uuid {
         &self.id
     }
 

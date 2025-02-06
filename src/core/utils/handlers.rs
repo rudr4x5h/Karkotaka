@@ -1,18 +1,17 @@
-use anyhow::Error;
 use axum::debug_handler;
 use axum::extract::{Json, Path};
 use axum::response::IntoResponse;
-use ulid::Ulid;
+use uuid::Uuid;
 
 use super::error::AppError;
 use super::persistence::DB;
 use crate::core::primary::body::Body;
 use crate::core::primary::headline::Headline;
 use crate::core::primary::headshot::Headshot;
-use crate::core::primary::story::{Story, STORY_DB};
+use crate::core::primary::story::{Story, StoryWithId, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
 use crate::core::secondary::image::Image;
-use crate::core::secondary::misc::Kind;
+use crate::core::secondary::misc::{Kind, Record};
 use crate::core::secondary::paragraph::Paragraph;
 use crate::core::secondary::report::Report;
 
@@ -21,25 +20,23 @@ pub async fn root() -> impl IntoResponse {
 }
 
 #[debug_handler]
-pub async fn create_story(Json(content): Json<String>) -> Result<Json<Story>, AppError> {
+pub async fn create_story(Json(content): Json<String>) -> Result<Json<StoryWithId>, AppError> {
     let kind = Kind::OG;
     let headline = Headline::new(content, kind);
     let story = Story::new(headline);
 
-    let record: Option<Story> = DB
-        // .create((STORY_DB, story.clone().get_id_str()))
+    let record: Option<StoryWithId> = DB
+        // .create((STORY_DB, story.clone().get_id().to_string()))
         .create(STORY_DB)
         .content(story.clone())
         .await?;
 
-    println!("Reached");
-    // dbg!(record);
-    Ok(Json(story))
+    Ok(Json(record.unwrap()))
 }
 
 #[debug_handler]
 pub async fn add_headshot(
-    Path(story_id): Path<Ulid>,
+    Path(story_id): Path<Uuid>,
     Json(uri): Json<String>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
@@ -55,7 +52,7 @@ pub async fn add_headshot(
 }
 
 pub async fn add_synopsis(
-    Path(story_id): Path<Ulid>,
+    Path(story_id): Path<Uuid>,
     Json(content): Json<String>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
@@ -73,7 +70,7 @@ pub async fn add_synopsis(
 }
 
 pub async fn add_body(
-    Path(story_id): Path<Ulid>,
+    Path(story_id): Path<Uuid>,
     Json(paragraphs): Json<Vec<String>>,
 ) -> Result<Json<Story>, AppError> {
     let paras = _get_para_from_strings(paragraphs.clone()).await;
@@ -100,7 +97,7 @@ async fn _get_para_from_strings(paragraphs: Vec<String>) -> Vec<Paragraph> {
 }
 
 pub async fn add_paragraph(
-    Path(story_id): Path<Ulid>,
+    Path(story_id): Path<Uuid>,
     Json(content): Json<String>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
@@ -118,7 +115,7 @@ pub async fn add_paragraph(
     Ok(Json(story))
 }
 
-pub async fn report_story(Path(story_id): Path<Ulid>) -> Result<Json<Report>, AppError> {
+pub async fn report_story(Path(story_id): Path<Uuid>) -> Result<Json<Report>, AppError> {
     let state = DB.clone();
     let story: Story = state
         .select((STORY_DB, story_id.to_string()))
