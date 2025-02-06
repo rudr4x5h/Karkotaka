@@ -7,6 +7,8 @@ use super::{
     synopsis::Synopsis,
 };
 
+pub const STORY_DB: &str = "story";
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Story {
     id: Ulid,
@@ -37,6 +39,10 @@ impl Story {
 
     pub fn get_id(&self) -> &Ulid {
         &self.id
+    }
+
+    pub fn get_id_str(&self) -> String {
+        self.id.to_string()
     }
 
     pub fn get_author(&self) -> &Author {

@@ -1,15 +1,15 @@
+use anyhow::Error;
 use axum::debug_handler;
-use axum::extract::{Json, Path, State};
+use axum::extract::{Json, Path};
 use axum::response::IntoResponse;
-use parking_lot::Mutex;
-use std::sync::Arc;
 use ulid::Ulid;
 
 use super::error::AppError;
+use super::persistence::DB;
 use crate::core::primary::body::Body;
 use crate::core::primary::headline::Headline;
 use crate::core::primary::headshot::Headshot;
-use crate::core::primary::story::Story;
+use crate::core::primary::story::{Story, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
 use crate::core::secondary::image::Image;
 use crate::core::secondary::misc::Kind;
@@ -21,25 +21,25 @@ pub async fn root() -> impl IntoResponse {
 }
 
 #[debug_handler]
-pub async fn create_story(
-    State(state): State<Arc<Mutex<PersistInMemory>>>,
-    Json(content): Json<String>,
-) -> Result<Json<Story>, AppError> {
+pub async fn create_story(Json(content): Json<String>) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
     let headline = Headline::new(content, kind);
     let story = Story::new(headline);
 
-    let mut state = state.lock();
-    let story_id = state.save(story.clone());
-    match story_id {
-        Ok(_) => Ok(Json(story.clone())),
-        Err(e) => Err(e),
+    let state = DB.clone();
+    if let Some(story) = state
+        .create((STORY_DB, story.get_id_str()))
+        .content(story)
+        .await?
+    {
+        Ok(Json(story))
+    } else {
+        Err(AppError(Error::msg("Story creation failed.")))
     }
 }
 
 #[debug_handler]
 pub async fn add_headshot(
-    State(state): State<Arc<Mutex<PersistInMemory>>>,
     Path(story_id): Path<Ulid>,
     Json(uri): Json<String>,
 ) -> Result<Json<Story>, AppError> {
@@ -47,14 +47,15 @@ pub async fn add_headshot(
     let image = Image::new(uri);
     let headshot = Headshot::new(kind, image);
 
-    let mut state = state.lock();
-    let story = state.load(story_id)?;
-    story.set_headshot(headshot);
-    Ok(Json(story.clone()))
+    let state = DB.clone();
+    let story = state
+        .update((STORY_DB, story_id.to_string()))
+        .content(headshot)
+        .await?;
+    Ok(Json(story.unwrap()))
 }
 
 pub async fn add_synopsis(
-    State(state): State<Arc<Mutex<PersistInMemory>>>,
     Path(story_id): Path<Ulid>,
     Json(content): Json<String>,
 ) -> Result<Json<Story>, AppError> {
@@ -64,25 +65,27 @@ pub async fn add_synopsis(
     let mut synopsis = Synopsis::new(kind.clone());
     synopsis.add_paragraph(paragraph);
 
-    let mut state = state.lock();
-    let story = state.load(story_id)?;
-    story.set_synopsis(synopsis.clone());
-
-    Ok(Json(story.clone()))
+    let state = DB.clone();
+    let story = state
+        .update((STORY_DB, story_id.to_string()))
+        .content(synopsis)
+        .await?;
+    Ok(Json(story.unwrap()))
 }
 
 pub async fn add_body(
-    State(state): State<Arc<Mutex<PersistInMemory>>>,
     Path(story_id): Path<Ulid>,
     Json(paragraphs): Json<Vec<String>>,
 ) -> Result<Json<Story>, AppError> {
     let paras = _get_para_from_strings(paragraphs.clone()).await;
     let body = Body::from_paras(paras);
 
-    let mut state = state.lock();
-    let story = state.load(story_id)?;
-    story.set_body(body);
-    Ok(Json(story.clone()))
+    let state = DB.clone();
+    let story = state
+        .update((STORY_DB, story_id.to_string()))
+        .content(body)
+        .await?;
+    Ok(Json(story.unwrap()))
 }
 
 async fn _get_para_from_strings(paragraphs: Vec<String>) -> Vec<Paragraph> {
@@ -98,28 +101,31 @@ async fn _get_para_from_strings(paragraphs: Vec<String>) -> Vec<Paragraph> {
 }
 
 pub async fn add_paragraph(
-    State(state): State<Arc<Mutex<PersistInMemory>>>,
     Path(story_id): Path<Ulid>,
     Json(content): Json<String>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind);
 
-    let mut state = state.lock();
-    let story = state.load(story_id)?;
-    let body = story.get_body_mut();
-    body.add_paragraph(paragraph);
+    let state = DB.clone();
+    let mut story: Story = state
+        .select((STORY_DB, story_id.to_string()))
+        .await?
+        .unwrap();
 
-    Ok(Json(story.clone()))
+    let body = story.get_body();
+    dbg!(body.get_paragraphs());
+
+    Ok(Json(story))
 }
 
-pub async fn report_story(
-    State(state): State<Arc<Mutex<PersistInMemory>>>,
-    Path(story_id): Path<Ulid>,
-) -> Result<Json<Report>, AppError> {
-    let mut state = state.lock();
-    let story = state.load(story_id)?;
+pub async fn report_story(Path(story_id): Path<Ulid>) -> Result<Json<Report>, AppError> {
+    let state = DB.clone();
+    let story: Story = state
+        .select((STORY_DB, story_id.to_string()))
+        .await?
+        .unwrap();
 
-    let report = Report::new(story.clone());
+    let report = Report::new(story);
     Ok(Json(report))
 }

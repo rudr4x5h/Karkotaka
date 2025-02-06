@@ -4,7 +4,7 @@ use ulid::Ulid;
 
 use super::misc::Kind;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Paragraph {
     id: Ulid,
     content: String,
