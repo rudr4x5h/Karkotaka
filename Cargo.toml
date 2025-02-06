@@ -3,6 +3,14 @@ name = "Karkotaka"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+lto = true
+strip = true
+opt-level = 3
+panic = 'abort'
+codegen-units = 1
+
+
 [dependencies]
 anyhow = "1.0.95"
 axum = { version = "0.8.1", features = ["query", "ws", "macros"] }
