@@ -16,8 +16,6 @@ use crate::core::secondary::misc::Kind;
 use crate::core::secondary::paragraph::Paragraph;
 use crate::core::secondary::report::Report;
 
-use super::persistence::{Persist, PersistInMemory};
-
 pub async fn root() -> impl IntoResponse {
     "Namaskaram"
 }
