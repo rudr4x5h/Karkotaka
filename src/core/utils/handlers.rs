@@ -35,7 +35,7 @@ pub async fn create_story(
     let story_id = state.save(story.clone());
     match story_id {
         Ok(_) => Ok(Json(story.clone())),
-        Err(e) => Err(AppError(e)),
+        Err(e) => Err(e),
     }
 }
 

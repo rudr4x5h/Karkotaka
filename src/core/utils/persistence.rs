@@ -4,9 +4,15 @@ use crate::core::primary::story::Story;
 use anyhow::Error;
 use ulid::Ulid;
 
+use super::error::AppError;
+
 pub trait Persist {
-    fn save(&mut self, story: Story) -> Result<Ulid, Error>;
-    fn load(&mut self, story_id: Ulid) -> Result<&mut Story, Error>;
+    fn save(&mut self, story: Story) -> Result<Ulid, AppError>;
+    fn load(&mut self, story_id: Ulid) -> Result<&mut Story, AppError>;
+}
+
+pub trait Searchable {
+    fn search(&self, query: String) -> Result<Vec<Story>, AppError>;
 }
 
 pub struct PersistInMemory {
@@ -20,18 +26,18 @@ impl PersistInMemory {
 }
 
 impl Persist for PersistInMemory {
-    fn save(&mut self, story: Story) -> Result<Ulid, Error> {
+    fn save(&mut self, story: Story) -> Result<Ulid, AppError> {
         let story_id = story.get_id().to_owned();
         self.db.insert(story_id, story);
         Ok(story_id)
     }
 
-    fn load(&mut self, story_id: Ulid) -> Result<&mut Story, Error> {
+    fn load(&mut self, story_id: Ulid) -> Result<&mut Story, AppError> {
         if let Some(story) = self.db.get_mut(&story_id) {
             return Ok(story);
         }
 
-        Err(Error::msg("Story not found"))
+        Err(AppError(Error::msg("Story not found")))
     }
 }
 
