@@ -2,7 +2,7 @@ use crate::core::secondary::paragraph::Paragraph;
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Body {
     num_chars: u8,
     num_words: u8,

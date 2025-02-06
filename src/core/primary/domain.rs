@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::author::Author;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Domain {
     name: DomainName,
     expert: Author,
@@ -32,7 +32,7 @@ impl Default for Domain {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum DomainName {
     Agriculture,
     Sustainability,

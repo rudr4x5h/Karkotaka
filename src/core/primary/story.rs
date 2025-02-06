@@ -9,7 +9,7 @@ use super::{
 
 pub const STORY_DB: &str = "story";
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Story {
     id: Ulid,
     created_at: DateTime<Local>,
