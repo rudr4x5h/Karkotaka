@@ -1,11 +1,9 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
 use crate::core::secondary::misc::Gender;
+use serde::{Deserialize, Serialize};
+use surrealdb::RecordId;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Author {
-    id: Uuid,
     name: String,
     gender: Option<Gender>,
     email: Option<String>,
@@ -14,10 +12,26 @@ pub struct Author {
     profile_uri: Option<String>,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct AuthorWithId {
+    id: RecordId,
+    name: String,
+    gender: Option<Gender>,
+    email: Option<String>,
+    contact: Option<String>,
+    profile_img: Option<String>,
+    profile_uri: Option<String>,
+}
+
+impl AuthorWithId {
+    pub fn get_id(&self) -> &RecordId {
+        &self.id
+    }
+}
+
 impl Author {
     pub fn new(name: String) -> Self {
         Self {
-            id: Uuid::new_v4(),
             name,
             gender: None,
             email: None,
@@ -25,10 +39,6 @@ impl Author {
             profile_img: None,
             profile_uri: None,
         }
-    }
-
-    pub fn get_id(&self) -> &Uuid {
-        &self.id
     }
 
     pub fn get_name(&self) -> &String {

@@ -22,6 +22,12 @@ pub struct StoryWithId {
     headshot: Headshot,
 }
 
+impl StoryWithId {
+    pub fn get_id(&self) -> &RecordId {
+        &self.id
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Story {
     created_at: DateTime<Local>,

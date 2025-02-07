@@ -1,12 +1,24 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use surrealdb::RecordId;
 
 use crate::core::primary::story::Story;
 
 #[derive(Serialize, Deserialize)]
+pub struct ReportWithId {
+    id: RecordId,
+    created_at: DateTime<Local>,
+    story: Story,
+}
+
+impl ReportWithId {
+    pub fn get_id(&self) -> &RecordId {
+        &self.id
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct Report {
-    id: Uuid,
     created_at: DateTime<Local>,
     story: Story,
 }
@@ -14,14 +26,9 @@ pub struct Report {
 impl Report {
     pub fn new(story: Story) -> Self {
         Self {
-            id: Uuid::new_v4(),
             created_at: Local::now(),
             story,
         }
-    }
-
-    pub fn get_id(&self) -> &Uuid {
-        &self.id
     }
 
     pub fn get_created_at(&self) -> &DateTime<Local> {

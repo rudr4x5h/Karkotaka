@@ -11,7 +11,7 @@ use crate::core::primary::headshot::Headshot;
 use crate::core::primary::story::{Story, StoryWithId, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
 use crate::core::secondary::image::Image;
-use crate::core::secondary::misc::{Kind, Record};
+use crate::core::secondary::misc::Kind;
 use crate::core::secondary::paragraph::Paragraph;
 use crate::core::secondary::report::Report;
 
