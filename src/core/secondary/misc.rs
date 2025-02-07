@@ -26,6 +26,5 @@ pub fn get_tuple(record: &RecordId) -> (String, String) {
 }
 
 pub fn str_to_recordid(table_key: (String, String)) -> RecordId {
-    let record = RecordId::from_table_key(table_key.0, table_key.1);
-    record
+    RecordId::from_table_key(table_key.0, table_key.1)
 }
