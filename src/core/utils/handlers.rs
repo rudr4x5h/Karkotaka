@@ -1,6 +1,7 @@
 use axum::debug_handler;
 use axum::extract::{Json, Path};
 use axum::response::IntoResponse;
+use surrealdb::opt::PatchOp;
 
 use super::error::AppError;
 use super::persistence::DB;
@@ -38,7 +39,10 @@ pub async fn add_headshot(
     let headshot = Headshot::new(kind, image);
 
     let story = misc::str_to_recordid((STORY_DB.to_string(), story_id));
-    let record = DB.update(story).merge(headshot).await?;
+    let record = DB
+        .update(story)
+        .patch(PatchOp::replace("/headshot", headshot))
+        .await?;
     Ok(Json(record.unwrap()))
 }
 
@@ -52,7 +56,10 @@ pub async fn add_synopsis(
     synopsis.add_paragraph(paragraph);
 
     let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
-    let record = DB.update(story).merge(synopsis).await?;
+    let record = DB
+        .update(story)
+        .patch(PatchOp::replace("/synopsis", synopsis))
+        .await?;
     Ok(Json(record.unwrap()))
 }
 
@@ -64,7 +71,10 @@ pub async fn add_body(
     let body = Body::from_paras(paras);
 
     let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
-    let record = DB.update(story).merge(body).await?;
+    let record = DB
+        .update(story)
+        .patch(PatchOp::replace("/body", body))
+        .await?;
     Ok(Json(record.unwrap()))
 }
 
@@ -89,9 +99,9 @@ pub async fn add_paragraph(
 
     let story_with_id = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
     let mut record: Story = DB.select(story_with_id.clone()).await?.unwrap();
-
     record.get_body_mut().add_paragraph(paragraph);
-    let record: Option<StoryWithId> = DB.update(story_with_id.clone()).content(record).await?;
+
+    let record: Option<StoryWithId> = DB.update(story_with_id.clone()).merge(record).await?;
     Ok(Json(record.unwrap()))
 }
 
