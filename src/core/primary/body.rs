@@ -1,6 +1,6 @@
-use crate::core::secondary::paragraph::Paragraph;
+use crate::core::secondary::paragraph::{Paragraph, ParagraphWithId};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use surrealdb::RecordId;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Body {
@@ -8,6 +8,33 @@ pub struct Body {
     num_words: u8,
     num_para: u8,
     paragraphs: Vec<Paragraph>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct BodyWithId {
+    id: RecordId,
+    num_chars: u8,
+    num_words: u8,
+    num_para: u8,
+    paragraphs: Vec<ParagraphWithId>,
+}
+
+impl BodyWithId {
+    pub fn get_id(&self) -> &RecordId {
+        &self.id
+    }
+
+    pub fn remove_paragraph(&mut self, id: &RecordId) {
+        let para_idx = self
+            .paragraphs
+            .iter()
+            .position(|p| p.get_id() == id)
+            .unwrap();
+        let para = self.paragraphs.remove(para_idx);
+        self.num_chars -= para.get_num_chars();
+        self.num_words -= para.get_num_words();
+        self.num_para -= 1;
+    }
 }
 
 impl Body {
@@ -57,18 +84,6 @@ impl Body {
         self.num_chars += paragraph.get_num_chars();
         self.num_words += paragraph.get_num_words();
         self.num_para += 1;
-    }
-
-    pub fn remove_paragraph(&mut self, id: &Uuid) {
-        let para_idx = self
-            .paragraphs
-            .iter()
-            .position(|p| p.get_id() == id)
-            .unwrap();
-        let para = self.paragraphs.remove(para_idx);
-        self.num_chars -= para.get_num_chars();
-        self.num_words -= para.get_num_words();
-        self.num_para -= 1;
     }
 }
 

@@ -18,3 +18,9 @@ pub enum Gender {
 pub struct Record {
     id: RecordId,
 }
+
+pub fn get_tuple(record: &RecordId) -> (String, String) {
+    let table = record.table().to_owned();
+    let key = record.key().to_owned().to_string();
+    (table, key)
+}

@@ -1,11 +1,23 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use surrealdb::RecordId;
 
 use crate::core::secondary::misc::Kind;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HeadlineWithId {
+    id: RecordId,
+    content: String,
+    kind: Kind,
+}
+
+impl HeadlineWithId {
+    pub fn get_id(&self) -> &RecordId {
+        &self.id
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Headline {
-    id: Uuid,
     content: String,
     kind: Kind,
 }
@@ -13,14 +25,9 @@ pub struct Headline {
 impl Headline {
     pub fn new<S: Into<String>>(content: S, kind: Kind) -> Self {
         Self {
-            id: Uuid::new_v4(),
             content: content.into(),
             kind,
         }
-    }
-
-    pub fn get_id(&self) -> &Uuid {
-        &self.id
     }
 
     pub fn get_content(&self) -> &String {

@@ -1,12 +1,28 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use surrealdb::RecordId;
 
 use crate::core::secondary::misc::Kind;
-use crate::core::secondary::paragraph::Paragraph;
+use crate::core::secondary::paragraph::{Paragraph, ParagraphWithId};
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SynopsisWithId {
+    id: RecordId,
+    kind: Kind,
+    paragraphs: Vec<ParagraphWithId>,
+}
+
+impl SynopsisWithId {
+    pub fn get_id(&self) -> &RecordId {
+        &self.id
+    }
+
+    pub fn remove_paragraph(&mut self, id: &RecordId) {
+        self.paragraphs.retain(|paragraph| paragraph.get_id() != id);
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Synopsis {
-    id: Uuid,
     kind: Kind,
     paragraphs: Vec<Paragraph>,
 }
@@ -14,14 +30,9 @@ pub struct Synopsis {
 impl Synopsis {
     pub fn new(kind: Kind) -> Self {
         Self {
-            id: Uuid::new_v4(),
             kind,
             paragraphs: Vec::new(),
         }
-    }
-
-    pub fn get_id(&self) -> &Uuid {
-        &self.id
     }
 
     pub fn get_kind(&self) -> &Kind {
@@ -38,10 +49,6 @@ impl Synopsis {
 
     pub fn add_paragraph(&mut self, paragraph: Paragraph) {
         self.paragraphs.push(paragraph);
-    }
-
-    pub fn remove_paragraph(&mut self, id: &Uuid) {
-        self.paragraphs.retain(|paragraph| paragraph.get_id() != id);
     }
 }
 

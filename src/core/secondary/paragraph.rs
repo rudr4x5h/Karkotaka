@@ -1,12 +1,36 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use surrealdb::RecordId;
 
 use super::misc::Kind;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ParagraphWithId {
+    id: RecordId,
+    content: String,
+    kind: Kind,
+    num_chars: u8,
+    num_words: u8,
+    created_at: DateTime<Local>,
+    updated_at: DateTime<Local>,
+}
+
+impl ParagraphWithId {
+    pub fn get_id(&self) -> &RecordId {
+        &self.id
+    }
+
+    pub fn get_num_chars(&self) -> u8 {
+        self.num_chars
+    }
+
+    pub fn get_num_words(&self) -> u8 {
+        self.num_words
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Paragraph {
-    id: Uuid,
     content: String,
     kind: Kind,
     num_chars: u8,
@@ -18,7 +42,6 @@ pub struct Paragraph {
 impl Paragraph {
     pub fn new(content: String, kind: Kind) -> Self {
         Self {
-            id: Uuid::new_v4(),
             content: content.clone(),
             kind,
             num_chars: content.clone().chars().count() as u8,
@@ -27,11 +50,6 @@ impl Paragraph {
             updated_at: Local::now(),
         }
     }
-
-    pub fn get_id(&self) -> &Uuid {
-        &self.id
-    }
-
     pub fn get_content(&self) -> &String {
         &self.content
     }

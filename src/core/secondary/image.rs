@@ -1,9 +1,22 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use surrealdb::RecordId;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ImageWithId {
+    id: RecordId,
+    uri: String,
+    caption: Option<String>,
+    prompt: Option<String>,
+}
+
+impl ImageWithId {
+    pub fn get_id(&self) -> &RecordId {
+        &self.id
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Image {
-    id: Uuid,
     uri: String,
     caption: Option<String>,
     prompt: Option<String>,
@@ -12,7 +25,6 @@ pub struct Image {
 impl Image {
     pub fn new<S: Into<String>>(uri: S) -> Self {
         Self {
-            id: Uuid::new_v4(),
             uri: uri.into(),
             caption: None,
             prompt: None,
