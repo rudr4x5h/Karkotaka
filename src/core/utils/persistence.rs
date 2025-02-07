@@ -19,5 +19,34 @@ pub async fn init_db_connection() -> Result<(), AppError> {
 
     DB.use_ns("testing").use_db("db_test").await?;
     println!("DB connection established.");
+
+    create_search_analyzers().await?;
+    create_search_indices().await?;
+    Ok(())
+}
+
+pub async fn create_search_analyzers() -> Result<(), AppError> {
+    let query = r#"
+        DEFINE ANALYZER IF NOT EXISTS primary_search_analyzer
+        TOKENIZERS blank
+        FILTERS ascii, lowercase, snowball(english);
+    "#;
+
+    DB.query(query).await?.check()?;
+    Ok(())
+}
+
+pub async fn create_search_indices() -> Result<(), AppError> {
+    let query = r#"
+            DEFINE INDEX IF NOT EXISTS headline
+            ON TABLE story
+            FIELDS type::field($field)
+            SEARCH ANALYZER primary_search_analyzer BM25
+        "#;
+
+    let records = DB.query(query).bind(("field", "headline")).await?.check()?;
+
+    dbg!(records);
+
     Ok(())
 }
