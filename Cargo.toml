@@ -1,5 +1,5 @@
 [package]
-name = "Karkotaka"
+name = "karkotaka"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,6 +9,10 @@ strip = true
 opt-level = 3
 panic = 'abort'
 codegen-units = 1
+
+[[example]]
+name = "play"
+path = "examples/play.rs"
 
 
 [dependencies]
