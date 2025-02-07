@@ -26,6 +26,10 @@ impl StoryWithId {
     pub fn get_id(&self) -> &RecordId {
         &self.id
     }
+
+    pub fn get_body(&self) -> &Body {
+        &self.body
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
