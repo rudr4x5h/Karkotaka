@@ -1,7 +1,6 @@
 use axum::debug_handler;
 use axum::extract::{Json, Path};
 use axum::response::IntoResponse;
-use uuid::Uuid;
 
 use super::error::AppError;
 use super::persistence::DB;
@@ -39,7 +38,7 @@ pub async fn add_headshot(
     let headshot = Headshot::new(kind, image);
 
     let story = misc::str_to_recordid((STORY_DB.to_string(), story_id));
-    let record = DB.update(story).content(headshot).await?;
+    let record = DB.update(story).merge(headshot).await?;
     Ok(Json(record.unwrap()))
 }
 
@@ -53,7 +52,7 @@ pub async fn add_synopsis(
     synopsis.add_paragraph(paragraph);
 
     let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
-    let record = DB.update(story).content(synopsis).await?;
+    let record = DB.update(story).merge(synopsis).await?;
     Ok(Json(record.unwrap()))
 }
 
@@ -65,7 +64,7 @@ pub async fn add_body(
     let body = Body::from_paras(paras);
 
     let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
-    let record = DB.update(story).content(body).await?;
+    let record = DB.update(story).merge(body).await?;
     Ok(Json(record.unwrap()))
 }
 
@@ -84,17 +83,16 @@ async fn _get_para_from_strings(paragraphs: Vec<String>) -> Vec<Paragraph> {
 pub async fn add_paragraph(
     Path(story_id): Path<String>,
     Json(content): Json<String>,
-) -> Result<Json<Story>, AppError> {
+) -> Result<Json<StoryWithId>, AppError> {
     let kind = Kind::OG;
     let paragraph = Paragraph::new(content, kind);
 
-    let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
-    let mut record: StoryWithId = DB.select(story).await?.unwrap();
+    let story_with_id = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
+    let mut record: Story = DB.select(story_with_id.clone()).await?.unwrap();
 
-    let body = record.get_body();
-    dbg!(body.get_paragraphs());
-
-    Ok(Json(record))
+    record.get_body_mut().add_paragraph(paragraph);
+    let record: Option<StoryWithId> = DB.update(story_with_id.clone()).content(record).await?;
+    Ok(Json(record.unwrap()))
 }
 
 pub async fn report_story(Path(story_id): Path<String>) -> Result<Json<Report>, AppError> {
