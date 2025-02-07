@@ -37,16 +37,14 @@ pub async fn create_search_analyzers() -> Result<(), AppError> {
 }
 
 pub async fn create_search_indices() -> Result<(), AppError> {
-    let query = r#"
+    let sql = r#"
             DEFINE INDEX IF NOT EXISTS headline
             ON TABLE story
-            FIELDS type::field($field)
-            SEARCH ANALYZER primary_search_analyzer BM25
-        "#;
+            FIELDS headline.content SEARCH
+            ANALYZER primary_search_analyzer BM25;
+            "#;
 
-    let records = DB.query(query).bind(("field", "headline")).await?.check()?;
-
-    dbg!(records);
+    DB.query(sql).await?.check()?;
 
     Ok(())
 }
