@@ -1,21 +1,21 @@
+use karkotaka::core::primary::story::Story;
 use karkotaka::core::utils::persistence::{init_db_connection, DB};
 
 #[tokio::main]
 async fn main() {
     init_db_connection().await.expect("Error conecting to DB");
 
-    let terms = "aum";
+    let terms = "ai";
     let query = r#"
-                SELECT * FROM story
-                WHERE type::field($field) @@ type::string($terms);
+                SELECT * FROM type::table($table)
+                WHERE headline.content @@ type::string($terms);
             "#;
 
     let records = DB
         .query(query)
-        .bind(("field", "headline"))
+        .bind(("table", "story"))
         .bind(("terms", terms))
-        .await
-        .expect("Error performing search");
+        .await;
 
     dbg!(records);
 }
