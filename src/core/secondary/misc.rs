@@ -28,3 +28,15 @@ pub fn get_tuple(record: &RecordId) -> (String, String) {
 pub fn str_to_recordid(table_key: (String, String)) -> RecordId {
     RecordId::from_table_key(table_key.0, table_key.1)
 }
+
+pub fn get_banner() -> String {
+    String::from(
+        r#"
+              __ __           __         __        __
+             / //_/___ ______/ /______  / /_____ _/ /______ _
+            / ,< / __ `/ ___/ //_/ __ \/ __/ __ `/ //_/ __ `/
+           / /| / /_/ / /  / ,< / /_/ / /_/ /_/ / ,< / /_/ /
+          /_/ |_\__,_/_/  /_/|_|\____/\__/\__,_/_/|_|\__,_/
+    "#,
+    )
+}
