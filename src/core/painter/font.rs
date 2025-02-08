@@ -1,8 +1,12 @@
 use anyhow::Error;
 use cosmic_text::{
-    Align, Attrs, Buffer, Color, Family, FontSystem, Metrics, Shaping, SwashCache, Weight, Wrap,
+    Align, Attrs, BorrowedWithFontSystem, Buffer, Color, Family, FontSystem, Metrics, Shaping,
+    SwashCache, Weight, Wrap,
 };
 use image::{imageops, Pixel, Rgb, RgbImage, Rgba, RgbaImage};
+use serde::{Deserialize, Serialize};
+
+use crate::core::primary::{headline::Headline, headshot::Headshot, synopsis::Synopsis};
 
 pub fn draw_text_with_background(
     primary_headline: &str,
@@ -18,6 +22,7 @@ pub fn draw_text_with_background(
 ) -> Result<(), Error> {
     let primary_font_dir = "assets/FontName.ttf";
     let secondary_font_dir = "assets/FontName.ttf";
+
     let mut primary_font = FontSystem::new();
     let mut secondary_font = FontSystem::new();
     let fontdb = primary_font.db_mut();
@@ -292,4 +297,102 @@ pub fn draw_text_with_background(
     }
 
     Ok(())
+}
+
+//####################
+fn _set_align<'a>(mut buffer: BorrowedWithFontSystem<'a, Buffer>, align: Option<Align>) {
+    for line in &mut buffer.lines {
+        line.set_align(align);
+    }
+    buffer.shape_until_scroll(true);
+}
+
+fn _get_empty_container(width: usize, height: usize) -> RgbaImage {
+    let mut container = RgbaImage::new(width as u32, height as u32);
+    for pixel in container.pixels_mut() {
+        *pixel = Rgba([0, 0, 0, 0]);
+    }
+    container
+}
+
+fn _paint_text() {
+    todo!()
+}
+
+//####################
+
+#[derive(Debug, Clone)]
+pub struct Canvas {
+    headshot: Headshot,
+    headline: Headline,
+    synopsis: Synopsis,
+    style: Style,
+    bounds: Bounds,
+}
+
+pub struct CanvasBuilder {
+    headshot: Option<Headshot>,
+    headline: Option<Headline>,
+    synopsis: Option<Synopsis>,
+    style: Option<Style>,
+    bounds: Option<Bounds>,
+}
+
+#[derive(Clone, Debug)]
+pub struct Bounds {
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+}
+
+#[derive(Clone, Debug)]
+pub struct Style {
+    text_color: Color,
+    highlight_color: Color,
+    metrics: Metrics,
+}
+
+impl Builder for CanvasBuilder {
+    type OutputType = Canvas;
+
+    fn set_headshot(&mut self, headshot: Headshot) {
+        self.headshot = Some(headshot);
+    }
+
+    fn set_headline(&mut self, headline: Headline) {
+        self.headline = Some(headline);
+    }
+
+    fn set_synopsis(&mut self, synopsis: Synopsis) {
+        self.synopsis = Some(synopsis);
+    }
+
+    fn set_style(&mut self, style: Style) {
+        self.style = Some(style);
+    }
+
+    fn set_bounds(&mut self, bounds: Bounds) {
+        self.bounds = Some(bounds);
+    }
+
+    fn build(self) -> Self::OutputType {
+        Canvas {
+            headshot: self.headshot.unwrap(),
+            headline: self.headline.unwrap(),
+            synopsis: self.synopsis.unwrap(),
+            style: self.style.unwrap(),
+            bounds: self.bounds.unwrap(),
+        }
+    }
+}
+
+pub trait Builder {
+    type OutputType;
+    fn set_headshot(&mut self, headshot: Headshot);
+    fn set_headline(&mut self, headline: Headline);
+    fn set_synopsis(&mut self, synopsis: Synopsis);
+    fn set_style(&mut self, style: Style);
+    fn set_bounds(&mut self, bounds: Bounds);
+    fn build(self) -> Self::OutputType;
 }
