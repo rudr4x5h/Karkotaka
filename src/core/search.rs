@@ -3,7 +3,12 @@ use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
 
 use super::{
-    primary::{headline::Headline, story::STORY_DB, synopsis::Synopsis},
+    primary::{
+        headline::Headline,
+        headshot::Headshot,
+        story::{Story, StoryWithId, STORY_DB},
+        synopsis::Synopsis,
+    },
     utils::{error::AppError, persistence::DB},
 };
 
@@ -35,22 +40,33 @@ impl Search {
 
     async fn perform_search(&self) -> Vec<FoundStory> {
         let terms = self.0.clone();
-        let matches = vec![];
+        let mut matches = vec![];
 
         let query = r#"
             SELECT * FROM type::table($table)
-            WHERE type::field($field) @@ type::string($terms);
+            WHERE headline.content @@ type::string($terms);
         "#;
 
-        let records = DB
+        let mut records = DB
             .query(query)
             .bind(("table", STORY_DB))
-            .bind(("field", "headline"))
             .bind(("terms", terms))
             .await
             .expect("Error performing search");
 
-        dbg!(records);
+        let stories: Vec<StoryWithId> = records.take(0).unwrap();
+        let stories_id: Vec<RecordId> = stories.iter().map(|s| s.get_id().to_owned()).collect();
+        let stories: Vec<Story> = stories.iter().map(|s| s.get_story_instance()).collect();
+
+        for (idx, story) in stories.iter().enumerate() {
+            let id = stories_id.get(idx).unwrap().to_owned();
+            let headline = story.get_headline().to_owned();
+            let synopsis = story.get_synopsis().to_owned();
+            let headshot = story.get_headshot().to_owned();
+
+            let found_story = FoundStory::new(id, headline, synopsis, headshot);
+            matches.push(found_story);
+        }
 
         matches
     }
@@ -61,6 +77,18 @@ struct FoundStory {
     id: RecordId,
     headline: Headline,
     synopsis: Synopsis,
+    headshot: Headshot,
+}
+
+impl FoundStory {
+    fn new(id: RecordId, headline: Headline, synopsis: Synopsis, headshot: Headshot) -> Self {
+        Self {
+            id,
+            headline,
+            synopsis,
+            headshot,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
