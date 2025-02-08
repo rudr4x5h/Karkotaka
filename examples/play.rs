@@ -1,5 +1,7 @@
-use karkotaka::core::primary::story::Story;
-use karkotaka::core::utils::persistence::{init_db_connection, DB};
+use karkotaka::core::{
+    primary::story::StoryWithId,
+    utils::persistence::{init_db_connection, DB},
+};
 
 #[tokio::main]
 async fn main() {
@@ -11,11 +13,14 @@ async fn main() {
                 WHERE headline.content @@ type::string($terms);
             "#;
 
-    let records = DB
+    let mut records = DB
         .query(query)
         .bind(("table", "story"))
         .bind(("terms", terms))
-        .await;
+        .await
+        .unwrap();
 
-    dbg!(records);
+    let story: Vec<StoryWithId> = records.take(0).unwrap();
+
+    dbg!(story);
 }

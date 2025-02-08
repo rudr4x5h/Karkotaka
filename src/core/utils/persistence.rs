@@ -28,7 +28,7 @@ pub async fn init_db_connection() -> Result<(), AppError> {
 pub async fn create_search_analyzers() -> Result<(), AppError> {
     let query = r#"
         DEFINE ANALYZER IF NOT EXISTS primary_search_analyzer
-        TOKENIZERS blank
+        TOKENIZERS blank, punct
         FILTERS ascii, lowercase, snowball(english);
     "#;
 
