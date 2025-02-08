@@ -39,4 +39,5 @@ fn init_routes() -> Router {
             "/api/v0/report/story/{story_id}",
             post(handlers::report_story),
         )
+        .route("/api/v0/search", get(handlers::search_stories))
 }

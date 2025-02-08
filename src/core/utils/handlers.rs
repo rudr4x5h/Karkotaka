@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use axum::debug_handler;
-use axum::extract::{Json, Path};
+use axum::extract::{Json, Path, Query};
 use axum::response::IntoResponse;
 use surrealdb::opt::PatchOp;
 
@@ -10,6 +12,7 @@ use crate::core::primary::headline::Headline;
 use crate::core::primary::headshot::Headshot;
 use crate::core::primary::story::{Story, StoryWithId, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
+use crate::core::search::{Search, SearchResults};
 use crate::core::secondary::image::Image;
 use crate::core::secondary::misc::{self, Kind};
 use crate::core::secondary::paragraph::Paragraph;
@@ -114,4 +117,14 @@ pub async fn report_story(Path(story_id): Path<String>) -> Result<Json<Report>, 
 
     let report = Report::new(story);
     Ok(Json(report))
+}
+
+pub async fn search_stories(
+    Query(query): Query<HashMap<String, String>>,
+) -> Result<Json<SearchResults>, AppError> {
+    let query = query.get("query").unwrap().to_owned();
+    let search = Search::new(query);
+    let results = search.execute().await?;
+
+    Ok(Json(results))
 }
