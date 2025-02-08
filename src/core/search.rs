@@ -15,6 +15,20 @@ use super::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Search(String);
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct FoundStory {
+    id: RecordId,
+    headline: Headline,
+    synopsis: Synopsis,
+    headshot: Headshot,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SearchResults {
+    query: String,
+    results: Vec<FoundStory>,
+}
+
 impl Search {
     pub fn new(query: String) -> Self {
         Self(query)
@@ -72,14 +86,6 @@ impl Search {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct FoundStory {
-    id: RecordId,
-    headline: Headline,
-    synopsis: Synopsis,
-    headshot: Headshot,
-}
-
 impl FoundStory {
     fn new(id: RecordId, headline: Headline, synopsis: Synopsis, headshot: Headshot) -> Self {
         Self {
@@ -89,10 +95,4 @@ impl FoundStory {
             headshot,
         }
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SearchResults {
-    query: String,
-    results: Vec<FoundStory>,
 }

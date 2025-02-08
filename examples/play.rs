@@ -1,5 +1,5 @@
 use karkotaka::core::{
-    primary::story::StoryWithId,
+    primary::story::{Story, StoryWithId},
     utils::persistence::{init_db_connection, DB},
 };
 
@@ -21,6 +21,13 @@ async fn main() {
         .unwrap();
 
     let story: Vec<StoryWithId> = records.take(0).unwrap();
+    let story_ids: Vec<String> = story.iter().map(|s| s.get_id().to_string()).collect();
+    let story: Vec<Story> = story.iter().map(|s| s.get_story_instance()).collect();
 
-    dbg!(story);
+    dbg!(story_ids.clone());
+
+    for (id, s) in story.iter().enumerate() {
+        let story_id = story_ids.get(id).unwrap();
+        println!("{} - {}", story_id, s.get_headline().get_content())
+    }
 }
