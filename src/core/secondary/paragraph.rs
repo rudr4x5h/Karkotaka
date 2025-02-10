@@ -8,6 +8,7 @@ use super::misc::Kind;
 pub struct ParagraphWithId {
     id: RecordId,
     content: String,
+    highlights: Vec<String>,
     kind: Kind,
     num_chars: u8,
     num_words: u8,
@@ -32,6 +33,7 @@ impl ParagraphWithId {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Paragraph {
     content: String,
+    highlights: Vec<String>,
     kind: Kind,
     num_chars: u8,
     num_words: u8,
@@ -44,6 +46,7 @@ impl Paragraph {
         Self {
             content: content.clone(),
             kind,
+            highlights: Vec::new(),
             num_chars: content.clone().chars().count() as u8,
             num_words: content.clone().split_whitespace().count() as u8,
             created_at: Local::now(),
@@ -57,6 +60,10 @@ impl Paragraph {
     pub fn set_content(&mut self, content: String) {
         self.content = content;
         self.set_updated_now();
+    }
+
+    pub fn get_highlights(&self) -> &Vec<String> {
+        &self.highlights
     }
 
     pub fn get_kind(&self) -> &Kind {
