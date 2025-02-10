@@ -1,17 +1,33 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use surrealdb::RecordId;
 
-use crate::core::primary::story::Story;
+use super::image::Image;
+use crate::core::search::FoundStory;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GenRequest {
-    stories: Vec<Story>,
+    stories: Vec<FoundStory>,
     qty: StoryQuantity,
     img_count: usize,
 }
 
 impl GenRequest {
-    pub fn new(img_count: usize, stories: Vec<Story>) -> Self {
+    pub fn get_qty(self) -> StoryQuantity {
+        self.qty
+    }
+
+    pub fn get_stories(self) -> Vec<FoundStory> {
+        self.stories
+    }
+
+    pub fn get_image_count(self) -> usize {
+        self.img_count
+    }
+}
+
+impl GenRequest {
+    pub fn new(img_count: usize, stories: Vec<FoundStory>) -> Self {
         let qty = if stories.len() > 1 {
             StoryQuantity::One
         } else {
@@ -22,6 +38,21 @@ impl GenRequest {
             stories,
             qty,
             img_count,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GenRequestResponse {
+    img_count: usize,
+    story_image: HashMap<String, Image>,
+}
+
+impl GenRequestResponse {
+    pub fn new(img_count: usize, story_image: HashMap<String, Image>) -> Self {
+        Self {
+            img_count,
+            story_image,
         }
     }
 }

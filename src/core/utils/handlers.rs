@@ -14,7 +14,7 @@ use crate::core::primary::story::{Story, StoryWithId, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
 use crate::core::search::{Search, SearchResults};
 use crate::core::secondary::image::Image;
-use crate::core::secondary::misc::{self, Kind};
+use crate::core::secondary::misc::{self, GenRequest, GenRequestResponse, Kind, StoryQuantity};
 use crate::core::secondary::paragraph::Paragraph;
 use crate::core::secondary::report::Report;
 
@@ -109,11 +109,7 @@ pub async fn add_paragraph(
 }
 
 pub async fn report_story(Path(story_id): Path<String>) -> Result<Json<Report>, AppError> {
-    let state = DB.clone();
-    let story: Story = state
-        .select((STORY_DB, story_id.to_string()))
-        .await?
-        .unwrap();
+    let story: Story = DB.select((STORY_DB, story_id.to_string())).await?.unwrap();
 
     let report = Report::new(story);
     Ok(Json(report))
@@ -127,4 +123,25 @@ pub async fn search_stories(
     let results = search.execute().await?;
 
     Ok(Json(results))
+}
+
+pub async fn request_generation(
+    Json(request): Json<GenRequest>,
+) -> Result<Json<GenRequestResponse>, AppError> {
+    // ) -> Result<Json<String>, AppError> {
+    // first: n articles n image.
+    let mut images = HashMap::new();
+
+    for story in request.clone().get_stories() {
+        let found_story = story.clone();
+        // kind of // let image = plug::llm::gen_image(found_story);
+        // db step - saving generated image into respective headshot
+        let img = found_story.clone().get_headshot().get_image().to_owned();
+        let story_id = found_story.clone().get_id().to_string();
+        images.insert(story_id, img);
+    }
+    let img_ct = request.clone().get_image_count();
+
+    let response = GenRequestResponse::new(img_ct, images);
+    Ok(Json(response))
 }
