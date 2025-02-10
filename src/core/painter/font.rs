@@ -4,54 +4,63 @@ use cosmic_text::{
     SwashCache, Weight, Wrap,
 };
 use image::{imageops, Pixel, Rgb, RgbImage, Rgba, RgbaImage};
-use serde::{Deserialize, Serialize};
 
 use crate::core::primary::{headline::Headline, headshot::Headshot, synopsis::Synopsis};
 
+use super::image_utils::read_image;
+
 pub fn draw_text_with_background(
-    primary_headline: &str,
-    secondary_headline: &str,
-    background_buffer: &mut RgbImage,
-    text_color: Color,
-    bounds_primary: (f32, f32, f32, f32), // (x, y, width, height)
-    bounds_secondary: (f32, f32, f32, f32), // (x, y, width, height)
-    highlight_words: &[String],
-    highlight_color: Color,
-    font_size: f32,
-    line_height: f32,
+    canvas: Canvas,
+    primary_font_file: &str,
+    secondary_font_file: &str,
+    font_family: &str,
 ) -> Result<(), Error> {
-    let primary_font_dir = "assets/FontName.ttf";
-    let secondary_font_dir = "assets/FontName.ttf";
+    let primary_headline = canvas.headline.get_content().as_str();
+    let highlight_words = canvas.headline.get_highlights();
+    let secondary_headline = canvas
+        .synopsis
+        .get_paragraphs()
+        .get(0)
+        .unwrap()
+        .get_content()
+        .as_str();
+
+    let bg_img_uri = canvas.headshot.get_image().get_uri();
+    let bg_img = read_image(bg_img_uri)?;
+    let mut background_buffer: RgbImage = RgbImage::from(bg_img);
+    let font_family = Family::Name(font_family);
 
     let mut primary_font = FontSystem::new();
     let mut secondary_font = FontSystem::new();
     let fontdb = primary_font.db_mut();
-    fontdb.load_font_file(primary_font_dir)?;
+    fontdb.load_font_file(primary_font_file)?;
     let fontdb = secondary_font.db_mut();
-    fontdb.load_font_file(secondary_font_dir)?;
+    fontdb.load_font_file(secondary_font_file)?;
 
-    let metrics_primary = Metrics::new(font_size, line_height);
-    let metrics_secondary = Metrics::new(font_size * 0.5, line_height * 0.5);
     let mut swash_primary = SwashCache::new();
     let mut swash_secondary = SwashCache::new();
 
-    let mut buffer_primary = Buffer::new(&mut primary_font, metrics_primary);
+    let mut buffer_primary = Buffer::new(&mut primary_font, canvas.style.metrics_primary);
     let mut buffer_primary = buffer_primary.borrow_with(&mut primary_font);
-    let mut buffer_secondary = Buffer::new(&mut secondary_font, metrics_secondary);
+    let mut buffer_secondary = Buffer::new(&mut secondary_font, canvas.style.metrics_secondary);
     let mut buffer_secondary = buffer_secondary.borrow_with(&mut secondary_font);
 
     // Set the buffers to match the bounding box dimensions.
-    buffer_primary.set_size(Some(bounds_primary.2), Some(bounds_primary.3));
-    buffer_secondary.set_size(Some(bounds_secondary.2), Some(bounds_secondary.3));
+    buffer_primary.set_size(
+        Some(canvas.bounds_primary.width),
+        Some(canvas.bounds_primary.height),
+    );
+    buffer_secondary.set_size(
+        Some(canvas.bounds_secondary.width),
+        Some(canvas.bounds_secondary.height),
+    );
 
-    let attrs = Attrs::new()
-        .family(Family::Name("Outfit"))
-        .weight(Weight::BLACK);
+    let attrs = Attrs::new().family(font_family).weight(Weight::BLACK);
 
     buffer_primary.set_rich_text(
         [(
             primary_headline,
-            attrs.color(text_color).family(Family::Name("Outfit")),
+            attrs.color(canvas.style.text_color).family(font_family),
         )],
         attrs,
         Shaping::Advanced,
@@ -62,8 +71,8 @@ pub fn draw_text_with_background(
         [(
             secondary_headline,
             attrs
-                .color(text_color)
-                .family(Family::Name("Outfit"))
+                .color(canvas.style.text_color)
+                .family(font_family)
                 .weight(Weight::NORMAL),
         )],
         attrs,
@@ -95,43 +104,51 @@ pub fn draw_text_with_background(
     }
 
     // Draw the respective contents in their containers.
-    buffer_primary.draw(&mut swash_primary, text_color, |x, y, _, _, color| {
-        // Adjust x and y coordinates to be relative to the bounding box
-        let x = (x as f32 + bounds_primary.0).floor() as i32;
-        let y = (y as f32 + bounds_primary.1).floor() as i32;
+    buffer_primary.draw(
+        &mut swash_primary,
+        canvas.style.text_color,
+        |x, y, _, _, color| {
+            // Adjust x and y coordinates to be relative to the bounding box
+            let x = (x as f32 + canvas.bounds_primary.x).floor() as i32;
+            let y = (y as f32 + canvas.bounds_primary.y).floor() as i32;
 
-        // Check if the pixel is within the bounding box
-        if x >= bounds_primary.0 as i32
-            && y >= bounds_primary.1 as i32
-            && x < (bounds_primary.0 + bounds_primary.2) as i32
-            && y < (bounds_primary.1 + bounds_primary.3) as i32
-        {
-            primary_headline_img.put_pixel(
-                x as u32,
-                y as u32,
-                Rgba([color.r(), color.g(), color.b(), color.a()]),
-            );
-        }
-    });
+            // Check if the pixel is within the bounding box
+            if x >= canvas.bounds_primary.x as i32
+                && y >= canvas.bounds_primary.y as i32
+                && x < (canvas.bounds_primary.x + canvas.bounds_primary.width) as i32
+                && y < (canvas.bounds_primary.y + canvas.bounds_primary.height) as i32
+            {
+                primary_headline_img.put_pixel(
+                    x as u32,
+                    y as u32,
+                    Rgba([color.r(), color.g(), color.b(), color.a()]),
+                );
+            }
+        },
+    );
 
-    buffer_secondary.draw(&mut swash_secondary, text_color, |x, y, _, _, color| {
-        // Adjust x and y coordinates to be relative to the bounding box
-        let x = (x as f32 + bounds_secondary.0).floor() as i32;
-        let y = (y as f32 + bounds_secondary.1).floor() as i32;
+    buffer_secondary.draw(
+        &mut swash_secondary,
+        canvas.style.text_color,
+        |x, y, _, _, color| {
+            // Adjust x and y coordinates to be relative to the bounding box
+            let x = (x as f32 + canvas.bounds_secondary.x).floor() as i32;
+            let y = (y as f32 + canvas.bounds_secondary.y).floor() as i32;
 
-        // Check if the pixel is within the bounding box
-        if x >= bounds_secondary.0 as i32
-            && y >= bounds_secondary.1 as i32
-            && x < (bounds_secondary.0 + bounds_secondary.2) as i32
-            && y < (bounds_secondary.1 + bounds_secondary.3) as i32
-        {
-            secondary_headline_img.put_pixel(
-                x as u32,
-                y as u32,
-                Rgba([color.r(), color.g(), color.b(), color.a()]),
-            );
-        }
-    });
+            // Check if the pixel is within the bounding box
+            if x >= canvas.bounds_secondary.x as i32
+                && y >= canvas.bounds_secondary.y as i32
+                && x < (canvas.bounds_secondary.x + canvas.bounds_secondary.width) as i32
+                && y < (canvas.bounds_secondary.y + canvas.bounds_secondary.height) as i32
+            {
+                secondary_headline_img.put_pixel(
+                    x as u32,
+                    y as u32,
+                    Rgba([color.r(), color.g(), color.b(), color.a()]),
+                );
+            }
+        },
+    );
 
     // Calculate the number of characters per line - primary headline.
     let mut chars_per_line = Vec::<usize>::new();
@@ -224,14 +241,16 @@ pub fn draw_text_with_background(
 
     // Drawing bounding boxes for each highlighted word.
     for (x, y, width, height) in word_positions {
-        let x = x as u32 + bounds_primary.0 as u32;
-        let y = y as u32 + bounds_primary.1 as u32;
+        let x = x as u32 + canvas.bounds_primary.x as u32;
+        let y = y as u32 + canvas.bounds_primary.y as u32;
         let width = width as u32;
         let height = height as u32;
 
         let shifted_x = (x as f32 - per_char_width_avg / 3.0).ceil() as u32;
-        let shifted_y =
-            y + (metrics_primary.font_size - metrics_primary.line_height).abs() as u32 / 2;
+        let shifted_y = y
+            + (canvas.style.metrics_primary.font_size - canvas.style.metrics_primary.line_height)
+                .abs() as u32
+                / 2;
         let new_width = width + per_char_width_avg.ceil() as u32 / 3;
 
         for i in shifted_x..background_buffer.width().min(shifted_x + new_width) {
@@ -247,9 +266,9 @@ pub fn draw_text_with_background(
                     //     ((highlight_color.b() as f32 * 0.5) + (bg_color[2] as f32 * 0.5)) as u8,
                     // ];
                     let blended_color = [
-                        highlight_color.r(),
-                        highlight_color.g(),
-                        highlight_color.b(),
+                        canvas.style.highlight_color.r(),
+                        canvas.style.highlight_color.g(),
+                        canvas.style.highlight_color.b(),
                     ];
 
                     background_buffer.put_pixel(i, j, Rgb(blended_color));
@@ -327,7 +346,8 @@ pub struct Canvas {
     headline: Headline,
     synopsis: Synopsis,
     style: Style,
-    bounds: Bounds,
+    bounds_primary: Bounds,
+    bounds_secondary: Bounds,
 }
 
 pub struct CanvasBuilder {
@@ -350,7 +370,8 @@ pub struct Bounds {
 pub struct Style {
     text_color: Color,
     highlight_color: Color,
-    metrics: Metrics,
+    metrics_primary: Metrics,
+    metrics_secondary: Metrics,
 }
 
 impl Builder for CanvasBuilder {
@@ -368,7 +389,24 @@ impl Builder for CanvasBuilder {
         self.synopsis = Some(synopsis);
     }
 
-    fn set_style(&mut self, style: Style) {
+    fn set_style(
+        &mut self,
+        font_size: f32,
+        line_height: f32,
+        p2s_ratio: f32,
+        text_color: Color,
+        highlight_color: Color,
+    ) {
+        let primary_metrics = Metrics::new(font_size, line_height);
+        let secondary_metrics = Metrics::new(font_size / p2s_ratio, line_height / p2s_ratio);
+
+        let style = Style {
+            text_color,
+            highlight_color,
+            metrics_primary: primary_metrics,
+            metrics_secondary: secondary_metrics,
+        };
+
         self.style = Some(style);
     }
 
@@ -382,7 +420,8 @@ impl Builder for CanvasBuilder {
             headline: self.headline.unwrap(),
             synopsis: self.synopsis.unwrap(),
             style: self.style.unwrap(),
-            bounds: self.bounds.unwrap(),
+            bounds_primary: self.bounds.clone().unwrap(),
+            bounds_secondary: self.bounds.clone().unwrap(),
         }
     }
 }
@@ -392,7 +431,14 @@ pub trait Builder {
     fn set_headshot(&mut self, headshot: Headshot);
     fn set_headline(&mut self, headline: Headline);
     fn set_synopsis(&mut self, synopsis: Synopsis);
-    fn set_style(&mut self, style: Style);
+    fn set_style(
+        &mut self,
+        font_size: f32,
+        line_height: f32,
+        p2s_ratio: f32,
+        text_color: Color,
+        highlight_color: Color,
+    );
     fn set_bounds(&mut self, bounds: Bounds);
     fn build(self) -> Self::OutputType;
 }
