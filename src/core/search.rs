@@ -16,11 +16,29 @@ use super::{
 pub struct Search(String);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct FoundStory {
+pub struct FoundStory {
     id: RecordId,
     headline: Headline,
     synopsis: Synopsis,
     headshot: Headshot,
+}
+
+impl FoundStory {
+    pub fn get_id(self) -> RecordId {
+        self.id
+    }
+
+    pub fn get_headline(self) -> Headline {
+        self.headline
+    }
+
+    pub fn get_synopsis(self) -> Synopsis {
+        self.synopsis
+    }
+
+    pub fn get_headshot(self) -> Headshot {
+        self.headshot
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
