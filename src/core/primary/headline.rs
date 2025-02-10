@@ -8,6 +8,7 @@ pub struct HeadlineWithId {
     id: RecordId,
     content: String,
     kind: Kind,
+    highlights: Vec<String>,
 }
 
 impl HeadlineWithId {
@@ -20,6 +21,7 @@ impl HeadlineWithId {
 pub struct Headline {
     content: String,
     kind: Kind,
+    highlights: Vec<String>,
 }
 
 impl Headline {
@@ -27,6 +29,7 @@ impl Headline {
         Self {
             content: content.into(),
             kind,
+            highlights: Vec::new(),
         }
     }
 
@@ -36,6 +39,10 @@ impl Headline {
 
     pub fn get_kind(&self) -> &Kind {
         &self.kind
+    }
+
+    pub fn get_highlights(&self) -> &Vec<String> {
+        &self.highlights
     }
 
     pub fn set_content(&mut self, content: String) {
