@@ -1,6 +1,37 @@
 use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
 
+use crate::core::primary::story::Story;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GenRequest {
+    stories: Vec<Story>,
+    qty: StoryQuantity,
+    img_count: usize,
+}
+
+impl GenRequest {
+    pub fn new(img_count: usize, stories: Vec<Story>) -> Self {
+        let qty = if stories.len() > 1 {
+            StoryQuantity::One
+        } else {
+            StoryQuantity::Many
+        };
+
+        Self {
+            stories,
+            qty,
+            img_count,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum StoryQuantity {
+    One,
+    Many,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Kind {
     OG,
