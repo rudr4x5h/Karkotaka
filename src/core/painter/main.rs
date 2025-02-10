@@ -2,9 +2,6 @@ use anyhow::Error;
 use cosmic_text::Color;
 use image::{Rgb, RgbImage};
 
-mod font;
-mod image_utils;
-
 use image_utils::{read_image, resize_fill, save_image_buffer, Format};
 
 fn main() -> Result<(), Error> {
@@ -29,8 +26,13 @@ fn main() -> Result<(), Error> {
     let bounds_secondary = (54.0, 900.0 + (70.0 * 3.0 + 21.0), 972.0, 200.0);
 
     // Specify words to highlight and highlight color
-    let highlight_words_sample= &["al-Jaili Refinery", "toxic smoke", "health"];
-    let highlight_words = highlight_words_sample.join(" ").to_lowercase().split_whitespace().map(|s| s.to_string()).collect::<Vec<String>>();
+    let highlight_words_sample = &["al-Jaili Refinery", "toxic smoke", "health"];
+    let highlight_words = highlight_words_sample
+        .join(" ")
+        .to_lowercase()
+        .split_whitespace()
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
 
     font::draw_text_with_background(
         primary_headline,
