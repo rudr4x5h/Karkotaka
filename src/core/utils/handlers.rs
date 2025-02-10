@@ -7,6 +7,7 @@ use surrealdb::opt::PatchOp;
 
 use super::error::AppError;
 use super::persistence::DB;
+use crate::core::plug;
 use crate::core::primary::body::Body;
 use crate::core::primary::headline::Headline;
 use crate::core::primary::headshot::Headshot;
@@ -14,7 +15,7 @@ use crate::core::primary::story::{Story, StoryWithId, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
 use crate::core::search::{Search, SearchResults};
 use crate::core::secondary::image::Image;
-use crate::core::secondary::misc::{self, GenRequest, GenRequestResponse, Kind, StoryQuantity};
+use crate::core::secondary::misc::{self, GenRequest, GenRequestResponse, Kind};
 use crate::core::secondary::paragraph::Paragraph;
 use crate::core::secondary::report::Report;
 
@@ -134,11 +135,18 @@ pub async fn request_generation(
 
     for story in request.clone().get_stories() {
         let found_story = story.clone();
-        // kind of // let image = plug::llm::gen_image(found_story);
-        // db step - saving generated image into respective headshot
-        let img = found_story.clone().get_headshot().get_image().to_owned();
-        let story_id = found_story.clone().get_id().to_string();
-        images.insert(story_id, img);
+        let story_id = found_story.clone().get_id().key().to_string();
+        let gen_image = plug::llm::gen_image(found_story.clone());
+        let mut headshot = found_story.clone().get_headshot();
+        headshot.set_image(gen_image.clone());
+
+        let story_with_id = misc::str_to_recordid((STORY_DB.to_string(), story_id.clone()));
+        let _: Option<Story> = DB
+            .update(story_with_id)
+            .patch(PatchOp::replace("/headshot", headshot))
+            .await?;
+
+        images.insert(story_id, gen_image);
     }
     let img_ct = request.clone().get_image_count();
 
