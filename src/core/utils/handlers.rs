@@ -126,6 +126,9 @@ pub async fn search_stories(
     Ok(Json(results))
 }
 
+/// TODO - return instantaneously a generation ID, using which
+/// the user can track whether the image has been generated.
+/// and then can query DB for content.
 pub async fn request_generation(
     Json(request): Json<GenRequest>,
 ) -> Result<Json<GenRequestResponse>, AppError> {
