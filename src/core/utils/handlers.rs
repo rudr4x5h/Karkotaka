@@ -39,8 +39,8 @@ pub async fn add_headshot(
     Json(uri): Json<String>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
-    let image = Image::new(uri);
-    let headshot = Headshot::new(kind, image);
+    let images = vec![Image::new(uri)];
+    let headshot = Headshot::new(kind, images);
 
     let story = misc::str_to_recordid((STORY_DB.to_string(), story_id));
     let record = DB
@@ -141,7 +141,7 @@ pub async fn request_generation(
         let story_id = found_story.clone().get_id().key().to_string();
         let gen_image = plug::llm::gen_image(found_story.clone());
         let mut headshot = found_story.clone().get_headshot();
-        headshot.set_image(gen_image.clone());
+        headshot.add_image(gen_image.clone());
 
         let story_with_id = misc::str_to_recordid((STORY_DB.to_string(), story_id.clone()));
         let _: Option<Story> = DB

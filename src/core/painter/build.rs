@@ -46,6 +46,18 @@ pub struct CanvasBuilder {
     bounds: Option<Bounds>,
 }
 
+impl CanvasBuilder {
+    pub fn new() -> Self {
+        Self {
+            headshot: None,
+            headline: None,
+            synopsis: None,
+            style: None,
+            bounds: None,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Bounds {
     x: f32,

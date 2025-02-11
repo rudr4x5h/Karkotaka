@@ -21,7 +21,7 @@ pub fn draw_text_with_background(
         .get_content()
         .as_str();
 
-    let bg_img_uri = canvas.headshot().get_image().get_uri();
+    let bg_img_uri = canvas.headshot().get_image(0).unwrap().get_uri();
     let bg_img = read_image(bg_img_uri)?;
     let mut background_buffer: RgbImage = RgbImage::from(bg_img);
     let font_family = Family::Name(font_family);
