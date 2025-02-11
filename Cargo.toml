@@ -22,6 +22,7 @@ axum-login = "0.17.0"
 chrono = { version = "0.4.39", features = ["serde"] }
 cosmic-text = "0.12.1"
 image = "0.25.5"
+llm = { version = "1.0.7", features = ["ollama", "google"] }
 parking_lot = { version = "0.12.3", features = ["serde"] }
 rand = "0.9.0"
 regex = "1.11.1"
