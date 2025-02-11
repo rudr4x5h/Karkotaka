@@ -3,8 +3,10 @@ use image::imageops::FilterType;
 use image::{DynamicImage, GenericImageView, ImageReader, RgbImage};
 use uuid::Uuid;
 
+use crate::core::utils::error::AppError;
+
 /// Resize the image to fill the given width and height, keeping the aspect ratio.
-pub fn resize_fill(img: &DynamicImage, width: u32, height: u32) -> Result<DynamicImage, Error> {
+pub fn resize_fill(img: &DynamicImage, width: u32, height: u32) -> Result<DynamicImage, AppError> {
     let (w, h) = img.dimensions();
     if w == width && h == height {
         return Ok(img.clone());

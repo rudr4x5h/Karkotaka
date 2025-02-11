@@ -55,15 +55,11 @@ pub fn gen_image(found_story: FoundStory) -> Result<Image, AppError> {
     )
     .expect("Error - Cannot paint image.");
 
-    let generated_image_bucket = "assets/OUTPUT_BASKET";
+    let generated_image_bucket = "/home/rudr4x5h/FOUNDRY/Karkotaka/assets/OUTPUT_BASKET";
     let save_path = save_image_buffer(&painted_img_buffer, generated_image_bucket, Format::JPG)?;
     Ok(Image::new(save_path))
 }
 
-pub fn get_llm_image(gen_prompt: String) -> Image {
-    // call the llm for image
-    // get the response, parse uri, download the image
-    // save it to storage, get the path
-    // crate an image, return
+pub fn get_llm_image(gen_prompt: String, found_story: FoundStory) -> Image {
     todo!()
 }

@@ -1,7 +1,6 @@
-use crate::core::painter::image_utils::resize_fill;
+use crate::core::{painter::image_utils::resize_fill, utils::error::AppError};
 
 use super::build::*;
-use anyhow::Error;
 use cosmic_text::{Align, Attrs, Buffer, Family, FontSystem, Shaping, SwashCache, Weight, Wrap};
 use image::{imageops, Pixel, Rgb, RgbImage, Rgba, RgbaImage};
 
@@ -12,7 +11,7 @@ pub fn draw_text_with_background(
     primary_font_file: &str,
     secondary_font_file: &str,
     font_family: &str,
-) -> Result<RgbImage, Error> {
+) -> Result<RgbImage, AppError> {
     let primary_headline = canvas.headline().get_content().as_str();
     let highlight_words = canvas.headline().get_highlights();
     let secondary_headline = canvas
@@ -273,6 +272,7 @@ pub fn draw_text_with_background(
                         canvas.style().highlight_color().r(),
                         canvas.style().highlight_color().g(),
                         canvas.style().highlight_color().b(),
+                        // canvas.style().highlight_color().a(),
                     ];
 
                     background_buffer.put_pixel(i, j, Rgb(blended_color));
@@ -285,7 +285,7 @@ pub fn draw_text_with_background(
     for (x, y, pixel) in primary_headline_img.enumerate_pixels() {
         if pixel[3] > 0 {
             let alpha = pixel[3] as f32 / 255.0;
-            let text_color = [pixel[0], pixel[1], pixel[2]];
+            let text_color = [pixel[0], pixel[1], pixel[2], pixel[3]];
             let bg_pixel = background_buffer.get_pixel(x, y);
             let bg_color = [bg_pixel[0], bg_pixel[1], bg_pixel[2]];
 
@@ -304,7 +304,7 @@ pub fn draw_text_with_background(
     for (x, y, pixel) in secondary_headline_img.enumerate_pixels() {
         if pixel[3] > 0 {
             let alpha = pixel[3] as f32 / 255.0;
-            let text_color = [pixel[0], pixel[1], pixel[2]];
+            let text_color = [pixel[0], pixel[1], pixel[2], pixel[3]];
             let bg_pixel = background_buffer.get_pixel(x, y);
             let bg_color = [bg_pixel[0], bg_pixel[1], bg_pixel[2]];
 
@@ -318,6 +318,5 @@ pub fn draw_text_with_background(
             background_buffer.put_pixel(x, y, Rgb(blended_color));
         }
     }
-    dbg!("returning bg buffer");
     Ok(background_buffer)
 }
