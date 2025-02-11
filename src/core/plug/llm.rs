@@ -37,7 +37,7 @@ pub fn _get_canvas(
     Ok(canvas_builder.build())
 }
 
-pub fn gen_image(found_story: FoundStory) -> Result<Image, AppError> {
+pub fn gen_final_image(found_story: FoundStory) -> Result<Image, AppError> {
     let headshot = found_story.clone().get_headshot();
     let synopsis = found_story.clone().get_synopsis();
     let headline = found_story.clone().get_headline();
@@ -60,6 +60,6 @@ pub fn gen_image(found_story: FoundStory) -> Result<Image, AppError> {
     Ok(Image::new(save_path))
 }
 
-pub fn get_llm_image(gen_prompt: String, found_story: FoundStory) -> Image {
+pub fn gen_llm_image(gen_prompt: String, found_story: FoundStory) -> Image {
     todo!()
 }

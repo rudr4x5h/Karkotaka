@@ -139,9 +139,9 @@ pub async fn request_generation(
     for story in request.clone().get_stories() {
         let found_story = story.clone();
         let story_id = found_story.clone().get_id().key().to_string();
-        let gen_image = plug::llm::gen_image(found_story.clone())?;
+        let final_image = plug::llm::gen_final_image(found_story.clone())?;
         let mut headshot = found_story.clone().get_headshot();
-        headshot.add_image(gen_image.clone());
+        headshot.add_image(final_image.clone());
 
         let story_with_id = misc::str_to_recordid((STORY_DB.to_string(), story_id.clone()));
         let _: Option<Story> = DB
@@ -149,7 +149,7 @@ pub async fn request_generation(
             .patch(PatchOp::replace("/headshot", headshot))
             .await?;
 
-        images.insert(story_id, gen_image);
+        images.insert(story_id, final_image);
     }
     let img_ct = request.clone().get_image_count();
 
