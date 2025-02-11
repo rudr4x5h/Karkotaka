@@ -10,6 +10,8 @@ pub struct Canvas {
     style: Style,
     bounds_primary: Bounds,
     bounds_secondary: Bounds,
+    width: u32,
+    height: u32,
 }
 
 impl Canvas {
@@ -36,6 +38,14 @@ impl Canvas {
     pub fn bounds_secondary(&self) -> &Bounds {
         &self.bounds_secondary
     }
+
+    pub fn width(&self) -> &u32 {
+        &self.width
+    }
+
+    pub fn height(&self) -> &u32 {
+        &self.height
+    }
 }
 
 pub struct CanvasBuilder {
@@ -43,7 +53,10 @@ pub struct CanvasBuilder {
     headline: Option<Headline>,
     synopsis: Option<Synopsis>,
     style: Option<Style>,
-    bounds: Option<Bounds>,
+    bounds_primary: Option<Bounds>,
+    bounds_secondary: Option<Bounds>,
+    width: Option<u32>,
+    height: Option<u32>,
 }
 
 impl CanvasBuilder {
@@ -53,7 +66,10 @@ impl CanvasBuilder {
             headline: None,
             synopsis: None,
             style: None,
-            bounds: None,
+            bounds_primary: None,
+            bounds_secondary: None,
+            width: None,
+            height: None,
         }
     }
 }
@@ -146,14 +162,32 @@ impl Builder for CanvasBuilder {
         self.style = Some(style);
     }
 
-    fn set_bounds(&mut self, x: f32, y: f32, width: f32, height: f32) {
+    fn set_bounds_p(&mut self, x: f32, y: f32, width: f32, height: f32) {
         let bounds = Bounds {
             x,
             y,
             width,
             height,
         };
-        self.bounds = Some(bounds);
+        self.bounds_primary = Some(bounds);
+    }
+
+    fn set_bounds_s(&mut self, x: f32, y: f32, width: f32, height: f32) {
+        let bounds = Bounds {
+            x,
+            y,
+            width,
+            height,
+        };
+        self.bounds_secondary = Some(bounds);
+    }
+
+    fn set_width(&mut self, width: u32) {
+        self.width = Some(width);
+    }
+
+    fn set_height(&mut self, height: u32) {
+        self.height = Some(height);
     }
 
     fn build(self) -> Self::OutputType {
@@ -162,8 +196,10 @@ impl Builder for CanvasBuilder {
             headline: self.headline.unwrap(),
             synopsis: self.synopsis.unwrap(),
             style: self.style.unwrap(),
-            bounds_primary: self.bounds.clone().unwrap(),
-            bounds_secondary: self.bounds.clone().unwrap(),
+            bounds_primary: self.bounds_primary.clone().unwrap(),
+            bounds_secondary: self.bounds_secondary.clone().unwrap(),
+            width: self.width.clone().unwrap(),
+            height: self.height.clone().unwrap(),
         }
     }
 }
@@ -181,6 +217,9 @@ pub trait Builder {
         text_color: Color,
         highlight_color: Color,
     );
-    fn set_bounds(&mut self, x: f32, y: f32, width: f32, height: f32);
+    fn set_bounds_p(&mut self, x: f32, y: f32, width: f32, height: f32);
+    fn set_bounds_s(&mut self, x: f32, y: f32, width: f32, height: f32);
+    fn set_width(&mut self, width: u32);
+    fn set_height(&mut self, height: u32);
     fn build(self) -> Self::OutputType;
 }

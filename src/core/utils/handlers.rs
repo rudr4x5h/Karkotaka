@@ -139,7 +139,7 @@ pub async fn request_generation(
     for story in request.clone().get_stories() {
         let found_story = story.clone();
         let story_id = found_story.clone().get_id().key().to_string();
-        let gen_image = plug::llm::gen_image(found_story.clone());
+        let gen_image = plug::llm::gen_image(found_story.clone())?;
         let mut headshot = found_story.clone().get_headshot();
         headshot.add_image(gen_image.clone());
 

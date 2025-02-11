@@ -1,3 +1,5 @@
+use crate::core::painter::image_utils::resize_fill;
+
 use super::build::*;
 use anyhow::Error;
 use cosmic_text::{Align, Attrs, Buffer, Family, FontSystem, Shaping, SwashCache, Weight, Wrap};
@@ -21,9 +23,14 @@ pub fn draw_text_with_background(
         .get_content()
         .as_str();
 
-    let bg_img_uri = canvas.headshot().get_image(0).unwrap().get_uri();
+    let bg_img_uri = canvas.headshot().get_last_image().unwrap().get_uri();
     let bg_img = read_image(bg_img_uri)?;
-    let mut background_buffer: RgbImage = RgbImage::from(bg_img);
+    let resized_img = resize_fill(
+        &bg_img,
+        canvas.width().to_owned(),
+        canvas.height().to_owned(),
+    )?;
+    let mut background_buffer: RgbImage = RgbImage::from(resized_img);
     let font_family = Family::Name(font_family);
 
     let mut primary_font = FontSystem::new();
@@ -311,6 +318,6 @@ pub fn draw_text_with_background(
             background_buffer.put_pixel(x, y, Rgb(blended_color));
         }
     }
-
+    dbg!("returning bg buffer");
     Ok(background_buffer)
 }

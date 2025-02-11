@@ -30,6 +30,14 @@ impl Headshot {
         self.images.get(idx)
     }
 
+    pub fn get_last_image(&self) -> Option<&Image> {
+        if self.image_count >= 1 {
+            self.images.get(self.image_count - 1)
+        } else {
+            None
+        }
+    }
+
     pub fn add_image(&mut self, image: Image) {
         self.images.push(image);
         self.image_count += 1;
@@ -54,8 +62,10 @@ impl Default for Headshot {
     fn default() -> Self {
         Self {
             kind: Kind::Placeholder,
-            images: vec![],
-            image_count: 0,
+            images: vec![Image::new(
+                "https://cdn.pixabay.com/photo/2022/08/26/13/15/man-7412527_960_720.png",
+            )],
+            image_count: 1,
         }
     }
 }

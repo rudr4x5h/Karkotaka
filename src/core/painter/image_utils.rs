@@ -29,7 +29,11 @@ pub enum Format {
     JPG,
 }
 
-pub fn save_image_buffer(img: &RgbImage, output_dir: &str, format: Format) -> Result<(), Error> {
+pub fn save_image_buffer(
+    img: &RgbImage,
+    output_dir: &str,
+    format: Format,
+) -> Result<String, Error> {
     let uid = Uuid::new_v4();
     let file_name = match format {
         Format::PNG => format!("{}.png", uid),
@@ -37,9 +41,8 @@ pub fn save_image_buffer(img: &RgbImage, output_dir: &str, format: Format) -> Re
     };
 
     let path = format!("{}/{}", output_dir, file_name);
-    println!("saving to: {}", path);
-    img.save(path)?;
-    Ok(())
+    img.save(path.clone())?;
+    Ok(path)
 }
 
 /// Read the image from the given path.
