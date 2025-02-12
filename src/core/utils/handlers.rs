@@ -1,10 +1,12 @@
 use std::collections::HashMap;
+use std::io::Read;
 
 use anyhow::anyhow;
 use axum::debug_handler;
 use axum::extract::{Json, Path, Query};
 use axum::response::IntoResponse;
 use surrealdb::opt::PatchOp;
+use surrealdb::RecordId;
 
 use super::error::AppError;
 use super::persistence::DB;
@@ -17,7 +19,7 @@ use crate::core::primary::story::{Story, StoryWithId, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
 use crate::core::search::{FoundStory, Search, SearchResults};
 use crate::core::secondary::image::Image;
-use crate::core::secondary::misc::{self, GenRequest, GenRequestResponse, Kind};
+use crate::core::secondary::misc::{self, str_to_recordid, GenRequest, GenRequestResponse, Kind};
 use crate::core::secondary::paragraph::Paragraph;
 use crate::core::secondary::report::Report;
 
@@ -57,7 +59,7 @@ pub async fn add_synopsis(
     Json(content): Json<Vec<String>>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
-    let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
+    let story_id = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
 
     let mut synopsis = Synopsis::new(kind.clone());
     for para_str in content {
@@ -65,12 +67,28 @@ pub async fn add_synopsis(
         synopsis.add_paragraph(para);
     }
 
-    // tokio::spawn(move || async {
-    //     let gen_syn = gen_llm_synopsis(found_story);
-    // });
+    let story_id_clone = story_id.clone();
+    let mut synopsis_clone = synopsis.clone();
+    tokio::spawn(async move {
+        let story: Story = DB.select(story_id_clone).await.unwrap().unwrap();
+        if story.get_synopsis().exists_generated_para() {
+            println!("Generated synopsis already exists, skipping.");
+            return;
+        }
+
+        let gen_syn = gen_llm_synopsis(story.clone()).await.unwrap();
+        for para in gen_syn.get_synoposes() {
+            let para = Paragraph::new(para, Kind::AI);
+            synopsis_clone.add_paragraph(para);
+        }
+        dbg!(
+            "added generated synopsis for",
+            story.get_headline().get_content()
+        );
+    });
 
     let record = DB
-        .update(story)
+        .update(story_id)
         .patch(PatchOp::replace("/synopsis", synopsis))
         .await?;
     Ok(Json(record.unwrap()))
@@ -166,7 +184,9 @@ pub async fn request_generation(
     Ok(Json(response))
 }
 
-pub async fn gen_syn(Json(content): Json<FoundStory>) -> Result<Json<GeneratedSynopsis>, AppError> {
-    let response = gen_llm_synopsis(content).await.unwrap();
+pub async fn gen_syn(Json(record_id): Json<String>) -> Result<Json<GeneratedSynopsis>, AppError> {
+    let story_id = str_to_recordid((STORY_DB.to_string(), record_id));
+    let story = DB.select(story_id).await?.unwrap();
+    let response = gen_llm_synopsis(story).await.unwrap();
     Ok(Json(response))
 }

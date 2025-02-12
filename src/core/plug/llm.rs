@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use cosmic_text::Color;
 use llm::{
     builder::{LLMBackend, LLMBuilder},
@@ -11,7 +12,7 @@ use crate::core::{
         build::{Builder, Canvas, CanvasBuilder},
         image_utils::{save_image_buffer, Format},
     },
-    primary::{headline::Headline, headshot::Headshot, synopsis::Synopsis},
+    primary::{headline::Headline, headshot::Headshot, story::Story, synopsis::Synopsis},
     search::FoundStory,
     secondary::image::Image,
     utils::error::AppError,
@@ -71,7 +72,7 @@ pub fn gen_final_image(found_story: FoundStory) -> Result<Image, AppError> {
 
 pub async fn gen_llm_image(gen_prompt: String, found_story: FoundStory) {}
 
-pub async fn gen_llm_synopsis(found_story: FoundStory) -> Option<GeneratedSynopsis> {
+pub async fn gen_llm_synopsis(story: Story) -> Option<GeneratedSynopsis> {
     let base_url = std::env::var("OLLAMA_URL").unwrap_or("http://127.0.0.1:11434".into());
 
     let llm = LLMBuilder::new()
@@ -84,7 +85,6 @@ pub async fn gen_llm_synopsis(found_story: FoundStory) -> Option<GeneratedSynops
         .build()
         .expect("Failed to build LLM (Ollama)");
 
-    let story = found_story.to_story().await;
     let body: Vec<String> = story
         .get_body()
         .get_paragraphs()
@@ -96,8 +96,6 @@ pub async fn gen_llm_synopsis(found_story: FoundStory) -> Option<GeneratedSynops
         story.get_headline().get_content(),
         body.join(". ")
     );
-
-    dbg!(combined_story.clone());
 
     let messages = vec![
         ChatMessage {
@@ -135,13 +133,26 @@ pub async fn gen_llm_synopsis(found_story: FoundStory) -> Option<GeneratedSynops
     }
 
     let clean_response = clean_json(response.unwrap()).unwrap();
-    let response: GeneratedSynopsis = serde_json::from_str(clean_response.as_str()).unwrap();
-    Some(response)
+    let response: Result<GeneratedSynopsis, serde_json::Error> =
+        serde_json::from_str(&clean_response);
+    match response {
+        Ok(resp) => Some(resp),
+        Err(e) => {
+            eprintln!("Error decoding LLM response for input:\n{}", clean_response);
+            None
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GeneratedSynopsis {
     synopses: Vec<String>,
+}
+
+impl GeneratedSynopsis {
+    pub fn get_synoposes(self) -> Vec<String> {
+        self.synopses
+    }
 }
 
 pub fn clean_json(json_str: String) -> Result<String, AppError> {

@@ -63,7 +63,7 @@ pub enum StoryQuantity {
     Many,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum Kind {
     OG,
     AI,

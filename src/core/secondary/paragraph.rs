@@ -10,8 +10,8 @@ pub struct ParagraphWithId {
     content: String,
     highlights: Vec<String>,
     kind: Kind,
-    num_chars: u8,
-    num_words: u8,
+    num_chars: usize,
+    num_words: usize,
     created_at: DateTime<Local>,
     updated_at: DateTime<Local>,
 }
@@ -21,11 +21,11 @@ impl ParagraphWithId {
         &self.id
     }
 
-    pub fn get_num_chars(&self) -> u8 {
+    pub fn get_num_chars(&self) -> usize {
         self.num_chars
     }
 
-    pub fn get_num_words(&self) -> u8 {
+    pub fn get_num_words(&self) -> usize {
         self.num_words
     }
 }
@@ -35,8 +35,8 @@ pub struct Paragraph {
     content: String,
     highlights: Vec<String>,
     kind: Kind,
-    num_chars: u8,
-    num_words: u8,
+    num_chars: usize,
+    num_words: usize,
     created_at: DateTime<Local>,
     updated_at: DateTime<Local>,
 }
@@ -47,8 +47,8 @@ impl Paragraph {
             content: content.clone(),
             kind,
             highlights: Vec::new(),
-            num_chars: content.clone().chars().count() as u8,
-            num_words: content.clone().split_whitespace().count() as u8,
+            num_chars: content.clone().chars().count(),
+            num_words: content.clone().split_whitespace().count(),
             created_at: Local::now(),
             updated_at: Local::now(),
         }
@@ -83,11 +83,11 @@ impl Paragraph {
         &self.updated_at
     }
 
-    pub fn get_num_chars(&self) -> u8 {
+    pub fn get_num_chars(&self) -> usize {
         self.num_chars
     }
 
-    pub fn get_num_words(&self) -> u8 {
+    pub fn get_num_words(&self) -> usize {
         self.num_words
     }
 
@@ -98,11 +98,11 @@ impl Paragraph {
     }
 
     fn update_word_count(&mut self) {
-        self.num_words = self.content.split_whitespace().count() as u8;
+        self.num_words = self.content.split_whitespace().count();
     }
 
     fn update_char_count(&mut self) {
-        self.num_chars = self.content.chars().count() as u8;
+        self.num_chars = self.content.chars().count();
     }
 }
 

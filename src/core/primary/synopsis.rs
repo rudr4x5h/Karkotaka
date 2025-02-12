@@ -50,6 +50,15 @@ impl Synopsis {
     pub fn add_paragraph(&mut self, paragraph: Paragraph) {
         self.paragraphs.push(paragraph);
     }
+
+    pub fn exists_generated_para(&self) -> bool {
+        let generate_para: Vec<&Paragraph> = self
+            .get_paragraphs()
+            .iter()
+            .filter(|p| *p.get_kind() == Kind::AI)
+            .collect();
+        generate_para.len() > 1
+    }
 }
 
 impl Default for Synopsis {

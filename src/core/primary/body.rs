@@ -4,18 +4,18 @@ use surrealdb::RecordId;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Body {
-    num_chars: u8,
-    num_words: u8,
-    num_para: u8,
+    num_chars: usize,
+    num_words: usize,
+    num_para: usize,
     paragraphs: Vec<Paragraph>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BodyWithId {
     id: RecordId,
-    num_chars: u8,
-    num_words: u8,
-    num_para: u8,
+    num_chars: usize,
+    num_words: usize,
+    num_para: usize,
     paragraphs: Vec<ParagraphWithId>,
 }
 
@@ -55,15 +55,15 @@ impl Body {
         body
     }
 
-    pub fn get_num_chars(&self) -> u8 {
+    pub fn get_num_chars(&self) -> usize {
         self.num_chars
     }
 
-    pub fn get_num_words(&self) -> u8 {
+    pub fn get_num_words(&self) -> usize {
         self.num_words
     }
 
-    pub fn get_num_para(&self) -> u8 {
+    pub fn get_num_para(&self) -> usize {
         self.num_para
     }
 
