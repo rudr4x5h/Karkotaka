@@ -21,7 +21,10 @@ pub async fn init_server() -> Result<(), AppError> {
 fn init_routes() -> Router {
     Router::new()
         .route("/", get(handlers::root))
-        .route("/api/v0/story", post(handlers::create_story))
+        .route(
+            "/api/v0/story",
+            post(handlers::create_story).get(handlers::list_stories),
+        )
         .route(
             "/api/v0/story/{story_id}/headshot",
             post(handlers::add_headshot),

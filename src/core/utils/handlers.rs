@@ -1,12 +1,9 @@
 use std::collections::HashMap;
-use std::io::Read;
 
-use anyhow::anyhow;
 use axum::debug_handler;
 use axum::extract::{Json, Path, Query};
 use axum::response::IntoResponse;
 use surrealdb::opt::PatchOp;
-use surrealdb::RecordId;
 
 use super::error::AppError;
 use super::persistence::DB;
@@ -17,7 +14,7 @@ use crate::core::primary::headline::Headline;
 use crate::core::primary::headshot::Headshot;
 use crate::core::primary::story::{Story, StoryWithId, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
-use crate::core::search::{FoundStory, Search, SearchResults};
+use crate::core::search::{Search, SearchResults};
 use crate::core::secondary::image::Image;
 use crate::core::secondary::misc::{self, str_to_recordid, GenRequest, GenRequestResponse, Kind};
 use crate::core::secondary::paragraph::Paragraph;
@@ -35,6 +32,12 @@ pub async fn create_story(Json(content): Json<String>) -> Result<Json<StoryWithI
 
     let record: Option<StoryWithId> = DB.create(STORY_DB).content(story.clone()).await?;
     Ok(Json(record.unwrap()))
+}
+
+pub async fn list_stories() -> Result<Json<Vec<StoryWithId>>, AppError> {
+    let query = "SELECT * FROM type::table($table) LIMIT 10";
+    let stories: Vec<StoryWithId> = DB.query(query).bind(("table", STORY_DB)).await?.take(0)?;
+    Ok(Json(stories))
 }
 
 #[debug_handler]

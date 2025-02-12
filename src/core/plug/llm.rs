@@ -70,7 +70,7 @@ pub fn gen_final_image(found_story: FoundStory) -> Result<Image, AppError> {
     Ok(Image::new(save_path))
 }
 
-pub async fn gen_llm_image(gen_prompt: String, found_story: FoundStory) {}
+pub async fn gen_llm_image(story: Story) {}
 
 pub async fn gen_llm_synopsis(story: Story) -> Option<GeneratedSynopsis> {
     let base_url = std::env::var("OLLAMA_URL").unwrap_or("http://127.0.0.1:11434".into());
