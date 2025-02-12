@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use anyhow::anyhow;
 use axum::debug_handler;
 use axum::extract::{Json, Path, Query};
 use axum::response::IntoResponse;
@@ -8,12 +9,13 @@ use surrealdb::opt::PatchOp;
 use super::error::AppError;
 use super::persistence::DB;
 use crate::core::plug;
+use crate::core::plug::llm::{gen_llm_synopsis, GeneratedSynopsis};
 use crate::core::primary::body::Body;
 use crate::core::primary::headline::Headline;
 use crate::core::primary::headshot::Headshot;
 use crate::core::primary::story::{Story, StoryWithId, STORY_DB};
 use crate::core::primary::synopsis::Synopsis;
-use crate::core::search::{Search, SearchResults};
+use crate::core::search::{FoundStory, Search, SearchResults};
 use crate::core::secondary::image::Image;
 use crate::core::secondary::misc::{self, GenRequest, GenRequestResponse, Kind};
 use crate::core::secondary::paragraph::Paragraph;
@@ -52,12 +54,14 @@ pub async fn add_headshot(
 
 pub async fn add_synopsis(
     Path(story_id): Path<String>,
-    Json(content): Json<String>,
+    Json(content): Json<Vec<String>>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
-    let paragraph = Paragraph::new(content, kind.clone());
     let mut synopsis = Synopsis::new(kind.clone());
-    synopsis.add_paragraph(paragraph);
+    for para_str in content {
+        let para = Paragraph::new(para_str, kind.clone());
+        synopsis.add_paragraph(para);
+    }
 
     let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
     let record = DB
@@ -154,5 +158,10 @@ pub async fn request_generation(
     let img_ct = request.clone().get_image_count();
 
     let response = GenRequestResponse::new(img_ct, images);
+    Ok(Json(response))
+}
+
+pub async fn gen_syn(Json(content): Json<FoundStory>) -> Result<Json<GeneratedSynopsis>, AppError> {
+    let response = gen_llm_synopsis(content).await.unwrap();
     Ok(Json(response))
 }
