@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use cosmic_text::Color;
 use llm::{
     builder::{LLMBackend, LLMBuilder},
@@ -85,18 +84,21 @@ pub async fn gen_llm_synopsis(found_story: FoundStory) -> Option<GeneratedSynops
         .build()
         .expect("Failed to build LLM (Ollama)");
 
-    let combined_synopsis: Vec<String> = found_story
-        .clone()
-        .get_synopsis()
+    let story = found_story.to_story().await;
+    let body: Vec<String> = story
+        .get_body()
         .get_paragraphs()
         .iter()
         .map(|p| p.get_content().to_owned())
         .collect();
     let combined_story = format!(
         "{}. {}",
-        found_story.get_headline().get_content(),
-        combined_synopsis.join(". ")
+        story.get_headline().get_content(),
+        body.join(". ")
     );
+
+    dbg!(combined_story.clone());
+
     let messages = vec![
         ChatMessage {
             role: ChatRole::User,

@@ -39,6 +39,12 @@ impl FoundStory {
     pub fn get_headshot(self) -> Headshot {
         self.headshot
     }
+
+    pub async fn to_story(self) -> Story {
+        let story_id = self.get_id();
+        let story: Story = DB.select(story_id).await.unwrap().unwrap();
+        story
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -57,13 +57,18 @@ pub async fn add_synopsis(
     Json(content): Json<Vec<String>>,
 ) -> Result<Json<Story>, AppError> {
     let kind = Kind::OG;
+    let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
+
     let mut synopsis = Synopsis::new(kind.clone());
     for para_str in content {
         let para = Paragraph::new(para_str, kind.clone());
         synopsis.add_paragraph(para);
     }
 
-    let story = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
+    // tokio::spawn(move || async {
+    //     let gen_syn = gen_llm_synopsis(found_story);
+    // });
+
     let record = DB
         .update(story)
         .patch(PatchOp::replace("/synopsis", synopsis))
