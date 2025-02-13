@@ -80,7 +80,7 @@ pub async fn gen_llm_highlights(content: String) -> Vec<String> {
         .base_url(base_url) // Set the Ollama server URL
         .model("granite3.1-dense:8b")
         .max_tokens(112) // Set maximum response length
-        .temperature(0.7) // Control response randomness (0.0-1.0)
+        .temperature(0.5) // Control response randomness (0.0-1.0)
         .stream(false) // Disable streaming responses
         .build()
         .expect("Failed to build LLM (Ollama)");
