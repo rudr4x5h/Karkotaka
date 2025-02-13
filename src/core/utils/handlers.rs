@@ -66,7 +66,7 @@ pub async fn add_synopsis(
 
     let mut synopsis = Synopsis::new(kind.clone());
     for para_str in content {
-        let para = Paragraph::new(para_str, kind.clone());
+        let para = Paragraph::new(para_str, kind.clone()).await;
         synopsis.add_paragraph(para);
     }
     let record = DB
@@ -84,7 +84,7 @@ pub async fn add_synopsis(
 
         let gen_syn = gen_llm_synopsis(story.clone()).await.unwrap();
         for para in gen_syn.get_synoposes() {
-            let para = Paragraph::new(para, Kind::AI);
+            let para = Paragraph::new(para, Kind::AI).await;
             story.get_synopsis_mut().add_paragraph(para);
         }
 
@@ -114,15 +114,14 @@ pub async fn add_body(
 }
 
 async fn _get_para_from_strings(paragraphs: Vec<String>) -> Vec<Paragraph> {
-    let paras = paragraphs
-        .iter()
-        .map(|content| {
-            let kind = Kind::OG;
-            Paragraph::new(content.clone(), kind)
-        })
-        .collect();
+    let mut para_vec = Vec::new();
+    for para in paragraphs {
+        let kind = Kind::OG;
+        let new_para = Paragraph::new(para, kind).await;
+        para_vec.push(new_para);
+    }
 
-    paras
+    para_vec
 }
 
 pub async fn add_paragraph(
@@ -130,7 +129,7 @@ pub async fn add_paragraph(
     Json(content): Json<String>,
 ) -> Result<Json<StoryWithId>, AppError> {
     let kind = Kind::OG;
-    let paragraph = Paragraph::new(content, kind);
+    let paragraph = Paragraph::new(content, kind).await;
 
     let story_with_id = misc::str_to_recordid((STORY_DB.to_string(), story_id.to_string()));
     let mut record: Story = DB.select(story_with_id.clone()).await?.unwrap();

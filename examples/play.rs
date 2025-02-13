@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use karkotaka::core::{
-    plug::llm::{clean_json, GeneratedSynopsis},
+    plug::llm::{clean_json, GeneratedHighlights, GeneratedSynopsis},
     primary::story::Story,
     secondary::misc::str_to_recordid,
     utils::{
@@ -38,10 +38,14 @@ async fn main() {
     // }
     //
 
-    init_db_connection().await.expect("Error connecting to db");
-    let story_id = str_to_recordid(("story".to_string(), "qcvhj1a7wahhryzst22p".to_string()));
+    let response = r#"{"terms": ["Chinese state-sponsored hacker", "Treasury information", "BeyondTrust vendor", "third-party product vulnerability"]}"#;
+    let data: GeneratedHighlights = serde_json::from_str(response).unwrap();
 
-    let story: Story = DB.select(story_id).await.unwrap().unwrap();
+    let mut vector = Vec::new();
+    for terms in data.get_terms() {
+        let words: Vec<&str> = terms.split_whitespace().collect();
+        vector.extend(words);
+    }
 
-    dbg!(story.get_synopsis().exists_generated_para());
+    dbg!(vector);
 }

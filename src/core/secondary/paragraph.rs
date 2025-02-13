@@ -2,6 +2,8 @@ use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
 
+use crate::core::plug::llm::gen_llm_highlights;
+
 use super::misc::Kind;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -42,7 +44,27 @@ pub struct Paragraph {
 }
 
 impl Paragraph {
-    pub fn new(content: String, kind: Kind) -> Self {
+    pub async fn new(content: String, kind: Kind) -> Self {
+        let highlights_raw = gen_llm_highlights(content.clone()).await;
+        let mut highlights = Vec::new();
+
+        for terms in highlights_raw {
+            let words: Vec<String> = terms.split_whitespace().map(|w| w.to_string()).collect();
+            highlights.extend(words);
+        }
+
+        Self {
+            content: content.clone(),
+            kind,
+            highlights,
+            num_chars: content.clone().chars().count(),
+            num_words: content.clone().split_whitespace().count(),
+            created_at: Local::now(),
+            updated_at: Local::now(),
+        }
+    }
+
+    pub fn new_blocking(content: String, kind: Kind) -> Self {
         Self {
             content: content.clone(),
             kind,
@@ -53,6 +75,7 @@ impl Paragraph {
             updated_at: Local::now(),
         }
     }
+
     pub fn get_content(&self) -> &String {
         &self.content
     }
@@ -64,6 +87,11 @@ impl Paragraph {
 
     pub fn get_highlights(&self) -> &Vec<String> {
         &self.highlights
+    }
+
+    pub fn set_highlights(&mut self, replace_with: Vec<String>) -> &Vec<String> {
+        self.highlights = replace_with;
+        self.get_highlights()
     }
 
     pub fn get_kind(&self) -> &Kind {
@@ -108,6 +136,6 @@ impl Paragraph {
 
 impl Default for Paragraph {
     fn default() -> Self {
-        Self::new(String::new(), Kind::Placeholder)
+        Self::new_blocking(String::new(), Kind::Placeholder)
     }
 }

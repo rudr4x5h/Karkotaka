@@ -72,6 +72,65 @@ pub fn gen_final_image(found_story: FoundStory) -> Result<Image, AppError> {
 
 pub async fn gen_llm_image(story: Story) {}
 
+pub async fn gen_llm_highlights(content: String) -> Vec<String> {
+    let base_url = std::env::var("OLLAMA_URL").unwrap_or("http://127.0.0.1:11434".into());
+
+    let llm = LLMBuilder::new()
+        .backend(LLMBackend::Ollama) // Use Ollama as the LLM backend
+        .base_url(base_url) // Set the Ollama server URL
+        .model("granite3.1-dense:8b")
+        .max_tokens(112) // Set maximum response length
+        .temperature(0.7) // Control response randomness (0.0-1.0)
+        .stream(false) // Disable streaming responses
+        .build()
+        .expect("Failed to build LLM (Ollama)");
+
+    let messages = vec![
+        ChatMessage {
+            role: ChatRole::User,
+            content: String::from(
+                r#"You are an expert in extracting key words or significant terms from an article given by user and return the generated response as JSON as per the schema {"terms": ["term1", "term2"]}. Respond to user using this schema."#,
+            ),
+        },
+        ChatMessage {
+            role: ChatRole::User,
+            content: format!("article: {}", content),
+        },
+    ];
+
+    let mut raw_response = String::default();
+    match llm.chat(&messages).await {
+        Ok(text) => {
+            let re = Regex::new(r"<think>[\w\W]*</think>").expect("Error parsing regex");
+            let trimmed_response = re.replace_all(text.as_str(), "").to_string();
+            let clean_response = clean_json(trimmed_response).unwrap();
+            raw_response = clean_response;
+        }
+        Err(e) => eprintln!("LLM Syn Error: {}", e),
+    }
+
+    let response: Result<GeneratedHighlights, serde_json::Error> =
+        serde_json::from_str(&raw_response.clone());
+    match response {
+        Ok(resp) => resp.terms,
+        Err(e) => {
+            eprintln!("Error generating highlights for input:\n{}", raw_response);
+            vec![]
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GeneratedHighlights {
+    terms: Vec<String>,
+}
+
+impl GeneratedHighlights {
+    pub fn get_terms(&self) -> &Vec<String> {
+        &self.terms
+    }
+}
+
 pub async fn gen_llm_synopsis(story: Story) -> Option<GeneratedSynopsis> {
     let base_url = std::env::var("OLLAMA_URL").unwrap_or("http://127.0.0.1:11434".into());
 
