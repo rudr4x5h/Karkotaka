@@ -74,6 +74,12 @@ impl CanvasBuilder {
     }
 }
 
+impl Default for CanvasBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Bounds {
     x: f32,
@@ -198,8 +204,8 @@ impl Builder for CanvasBuilder {
             style: self.style.unwrap(),
             bounds_primary: self.bounds_primary.clone().unwrap(),
             bounds_secondary: self.bounds_secondary.clone().unwrap(),
-            width: self.width.clone().unwrap(),
-            height: self.height.clone().unwrap(),
+            width: self.width.unwrap(),
+            height: self.height.unwrap(),
         }
     }
 }

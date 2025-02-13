@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use cosmic_text::Color;
 use llm::{
     builder::{LLMBackend, LLMBuilder},
@@ -70,7 +69,7 @@ pub fn gen_final_image(found_story: FoundStory) -> Result<Image, AppError> {
     Ok(Image::new(save_path))
 }
 
-pub async fn gen_llm_image(story: Story) {}
+pub async fn gen_llm_image(_story: Story) {}
 
 pub async fn gen_llm_highlights(content: String) -> Vec<String> {
     let base_url = std::env::var("OLLAMA_URL").unwrap_or("http://127.0.0.1:11434".into());
@@ -113,7 +112,7 @@ pub async fn gen_llm_highlights(content: String) -> Vec<String> {
         serde_json::from_str(&raw_response.clone());
     match response {
         Ok(resp) => resp.terms,
-        Err(e) => {
+        Err(_) => {
             eprintln!("Error generating highlights for input:\n{}", raw_response);
             vec![]
         }
@@ -196,7 +195,7 @@ pub async fn gen_llm_synopsis(story: Story) -> Option<GeneratedSynopsis> {
         serde_json::from_str(&clean_response);
     match response {
         Ok(resp) => Some(resp),
-        Err(e) => {
+        Err(_) => {
             eprintln!("Error decoding LLM response for input:\n{}", clean_response);
             None
         }

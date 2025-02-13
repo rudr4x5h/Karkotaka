@@ -17,7 +17,7 @@ pub fn draw_text_with_background(
     let secondary_headline = canvas
         .synopsis()
         .get_paragraphs()
-        .get(0)
+        .first()
         .unwrap()
         .get_content()
         .as_str();
@@ -169,8 +169,7 @@ pub fn draw_text_with_background(
     // to bound the highlighted word.
     let mut word_positions = Vec::<(f32, f32, f32, f32)>::new();
     let mut highlight_char_count = 0;
-    let mut current_line = 0;
-    for run in buffer_primary.layout_runs() {
+    for (current_line, run) in buffer_primary.layout_runs().enumerate() {
         let mut word = String::new();
         let mut current_char_count = 0;
         let mut word_left_boundary = 0;
@@ -199,7 +198,7 @@ pub fn draw_text_with_background(
                     highlight_char_count += current_word.len();
                     word_positions.push((
                         word_left_boundary as f32,
-                        run.line_top as f32,
+                        run.line_top,
                         word_width as f32,
                         glyphs.font_size,
                     ));
@@ -210,7 +209,6 @@ pub fn draw_text_with_background(
                 make_next_boundary_left = true;
             }
         }
-        current_line += 1;
     }
 
     // Calculate the average width of the highlighted words - primary headline.
@@ -228,7 +226,7 @@ pub fn draw_text_with_background(
 
     // Paint the gradient onto the background buffer
     for (x, y, pixel) in grad.enumerate_pixels() {
-        let y_offset = (img_height / 2) as u32;
+        let y_offset = img_height / 2;
         let bg_pixel = background_buffer.get_pixel(x, y + y_offset);
         let alpha = pixel[3] as f32 / 255.0;
 
@@ -259,7 +257,7 @@ pub fn draw_text_with_background(
         for i in shifted_x..background_buffer.width().min(shifted_x + new_width) {
             for j in shifted_y..background_buffer.height().min(shifted_y + height) {
                 // if let Some(bg_pixel) = background_buffer.get_pixel_checked(i, j) {
-                if let Some(_) = background_buffer.get_pixel_checked(i, j) {
+                if background_buffer.get_pixel_checked(i, j).is_some() {
                     // let bg_color = [bg_pixel[0], bg_pixel[1], bg_pixel[2]];
 
                     // Alpha blending with actual background color
