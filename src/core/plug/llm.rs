@@ -116,7 +116,7 @@ pub async fn gen_llm_synopsis(story: Story) -> Option<GeneratedSynopsis> {
         },
         ChatMessage {
             role: ChatRole::User,
-            content: "return response in a valid JSON, like {'synopses': ['theme1', 'theme2', 'theme3']}".into()
+            content: r#"return response in a valid JSON, like {"synopses": ["theme1", "theme2", "theme3"]}"#.into()
         }
     ];
 

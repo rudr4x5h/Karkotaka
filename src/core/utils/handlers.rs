@@ -69,11 +69,14 @@ pub async fn add_synopsis(
         let para = Paragraph::new(para_str, kind.clone());
         synopsis.add_paragraph(para);
     }
+    let record = DB
+        .update(story_id.clone())
+        .patch(PatchOp::replace("/synopsis", synopsis))
+        .await?;
 
     let story_id_clone = story_id.clone();
-    let mut synopsis_clone = synopsis.clone();
     tokio::spawn(async move {
-        let story: Story = DB.select(story_id_clone).await.unwrap().unwrap();
+        let mut story: Story = DB.select(story_id_clone.clone()).await.unwrap().unwrap();
         if story.get_synopsis().exists_generated_para() {
             println!("Generated synopsis already exists, skipping.");
             return;
@@ -82,18 +85,16 @@ pub async fn add_synopsis(
         let gen_syn = gen_llm_synopsis(story.clone()).await.unwrap();
         for para in gen_syn.get_synoposes() {
             let para = Paragraph::new(para, Kind::AI);
-            synopsis_clone.add_paragraph(para);
+            story.get_synopsis_mut().add_paragraph(para);
         }
-        dbg!(
-            "added generated synopsis for",
-            story.get_headline().get_content()
-        );
-    });
 
-    let record = DB
-        .update(story_id)
-        .patch(PatchOp::replace("/synopsis", synopsis))
-        .await?;
+        let updated: Option<StoryWithId> = DB
+            .update(story_id_clone.clone())
+            .merge(story)
+            .await
+            .unwrap();
+        dbg!("added generated synopsis for", updated);
+    });
     Ok(Json(record.unwrap()))
 }
 

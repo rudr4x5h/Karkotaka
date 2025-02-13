@@ -108,6 +108,10 @@ impl Story {
         &self.synopsis
     }
 
+    pub fn get_synopsis_mut(&mut self) -> &mut Synopsis {
+        &mut self.synopsis
+    }
+
     pub fn set_synopsis(&mut self, synopsis: Synopsis) {
         self.synopsis = synopsis;
     }
