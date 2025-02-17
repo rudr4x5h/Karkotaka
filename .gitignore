@@ -24,3 +24,4 @@ Cargo.lock
 **/*.*ignore
 OUTPUT_BASKET/
 assets/
+.env
