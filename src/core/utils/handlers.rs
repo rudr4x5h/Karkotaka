@@ -196,7 +196,7 @@ pub async fn gen_syn(Json(record_id): Json<String>) -> Result<Json<GeneratedSyno
 }
 
 pub async fn get_trending_topics() -> Result<Json<TrendingTopics>, AppError> {
-    let woeid = "20070458"; // Delhi (India)
+    let woeid = "20070458"; // Delhi (India) TODO: Make this dynamic.
     let trending_topics = trending_topics(woeid.to_string()).await?;
     Ok(Json(trending_topics))
 }
