@@ -73,13 +73,40 @@ pub async fn trending_topics(woeid: String) -> Result<TrendingTopics, AppError> 
     }
 }
 
+async fn resolve_topics_to_stories(trending_topics: TrendingTopics) {
+    let topics = trending_topics.get_data().to_owned();
+    let trends = topics
+        .iter()
+        .map(|topic| {
+            let topic = topic.get_topic().to_owned();
+            topic
+        })
+        .collect::<Vec<_>>();
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrendingTopics {
     data: Vec<TrendingTopic>,
+}
+
+impl TrendingTopics {
+    pub fn get_data(&self) -> &Vec<TrendingTopic> {
+        &self.data
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrendingTopic {
     trend_name: String,
     tweet_count: u32,
+}
+
+impl TrendingTopic {
+    pub fn get_topic(&self) -> &String {
+        &self.trend_name
+    }
+
+    pub fn get_tweet_count(&self) -> u32 {
+        self.tweet_count
+    }
 }
