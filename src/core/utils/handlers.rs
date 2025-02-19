@@ -9,6 +9,7 @@ use super::error::AppError;
 use super::persistence::DB;
 use crate::core::plug;
 use crate::core::plug::llm::{gen_llm_synopsis, GeneratedSynopsis};
+use crate::core::plug::social::{trending_topics, TrendingTopics};
 use crate::core::primary::body::Body;
 use crate::core::primary::headline::Headline;
 use crate::core::primary::headshot::Headshot;
@@ -192,4 +193,10 @@ pub async fn gen_syn(Json(record_id): Json<String>) -> Result<Json<GeneratedSyno
     let story = DB.select(story_id).await?.unwrap();
     let response = gen_llm_synopsis(story).await.unwrap();
     Ok(Json(response))
+}
+
+pub async fn get_trending_topics() -> Result<Json<TrendingTopics>, AppError> {
+    let woeid = "20070458"; // Delhi (India)
+    let trending_topics = trending_topics(woeid.to_string()).await?;
+    Ok(Json(trending_topics))
 }

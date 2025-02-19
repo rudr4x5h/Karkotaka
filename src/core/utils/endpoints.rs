@@ -45,4 +45,5 @@ fn init_routes() -> Router {
         .route("/api/v0/search", get(handlers::search_stories))
         .route("/api/v0/generate", post(handlers::request_generation))
         .route("/api/v0/synopsis", post(handlers::gen_syn))
+        .route("/api/v0/trending", get(handlers::get_trending_topics)) // topics, not stories [TESTING]
 }
